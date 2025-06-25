@@ -340,6 +340,7 @@ async function createUser(application) {
             role: 'intern',
             group: application.field,
             pemail: application.email,
+            photoURL: application.photoURL,
             uid: result.uid,
             university: application.university,
             status: 'pending'
