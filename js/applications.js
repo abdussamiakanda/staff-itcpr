@@ -359,9 +359,14 @@ async function createUser(application) {
             <li>Log in using the email and temporary password above</li>
             <li>Click on the person icon on the top right corner</li>
             <li>Click on Manage account, and change your password immediately</li>
-            <li>Once updated, you can start using the mailbox, and other services</li>
             <li>Visit the portal: https://portal.itcpr.org</li>
+            <li>Log in using the email and new password you just set</li>
+            <li>After logging in, you will be prompted to join our Discord server</li>
+            <li>Click Join button and join the server</li>
+            <li>Download Discord desktop app and the mobile app to join the server</li>
+            <li>You can now start using the portal and other services</li>
             </ul>
+            <b>Expolre our services to be familiar with the portal. All our communication is done through Discord and the webmail.</b>
         `;
         const subject = `Welcome to ITCPR Portal`;
         await sendEmail(application.email, subject, getEmailTemplate(application.name, message));
