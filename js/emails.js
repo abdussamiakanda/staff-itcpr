@@ -70,8 +70,9 @@ function showEmailSender() {
                             <div class="form-group-row">
                                 <div class="form-group">
                                     <label for="emailList">Email Group</label>
-                                    <select id="emailList" required>
+                                    <select id="emailList" required onchange="window.updateToField()">
                                         <option value="" disabled selected>Select email group</option>
+                                        <option value="single">Single User</option>
                                         <option value="all">All Users</option>
                                         ${groupOptions}
                                         <option value="interns">Interns</option>
@@ -83,6 +84,16 @@ function showEmailSender() {
                                 <div class="form-group">
                                     <label for="emailSubject">Subject</label>
                                     <input type="text" id="emailSubject" placeholder="Enter email subject" required />
+                                </div>
+                            </div>
+                            <div class="form-group-row" id="emailToDiv" style="display: none;">
+                                <div class="form-group">
+                                    <label for="emailTo">To</label>
+                                    <input type="text" id="emailTo" placeholder="Enter email address" />
+                                </div>
+                                <div class="form-group">
+                                    <label for="emailName">Name</label>
+                                    <input type="text" id="emailName" placeholder="Enter name" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -104,6 +115,19 @@ function showEmailSender() {
         </div>
     `;
 }
+
+window.updateToField = function() {
+    const emailList = document.getElementById('emailList').value;
+    const emailToDiv = document.getElementById('emailToDiv');
+
+    // hide the to field if the email list is not single
+    if (emailList !== 'single') {
+        emailToDiv.style.display = 'none';
+    } else {
+        emailToDiv.style.display = 'grid';
+    }
+}
+
 
 // Send bulk emails
 async function sendBulkEmails() {
@@ -128,6 +152,8 @@ async function sendBulkEmails() {
         targetUsers = users.filter(user => user.position === 'staff' && user.email);
     } else if (emailList === 'server') {
         targetUsers = users.filter(user => user.zerotierId && user.email);
+    } else if (emailList === 'single') {
+        targetUsers = [{email: document.getElementById('emailTo').value, name: document.getElementById('emailName').value}];
     } else {
         targetUsers = users.filter(user => user.group === emailList && user.email);
     }
@@ -147,7 +173,7 @@ async function sendBulkEmails() {
 
         for (const user of targetUsers) {
             try {
-                const result = await sendEmail(user.email, emailSubject, getEmailTemplate(user.name || 'User', emailBody));
+                const result = await sendEmail(user.email, emailSubject, getEmailTemplate(user.name || 'User', markdownToHtml(emailBody)));
                 if (result) {
                     successCount++;
                 } else {
@@ -165,6 +191,15 @@ async function sendBulkEmails() {
         console.error('Error sending bulk emails:', error);
         alert('Error sending emails. Please try again.');
     }
+}
+
+function markdownToHtml(markdownText) {
+    // Make sure 'marked' is available
+    if (typeof marked === 'undefined') {
+      throw new Error("The 'marked' library is required. Include it via CDN or install it.");
+    }
+  
+    return marked.parse(markdownText);
 }
 
 // Clear form
