@@ -102,6 +102,16 @@ async function loadApplications() {
             };
         });
         
+        // Sort applications by createdAt and submittedAt (newest first)
+        applications.sort((a, b) => {
+            // Get the submission date for each application
+            const dateA = new Date(a.createdAt || a.submittedAt || a.timestamp || 0);
+            const dateB = new Date(b.createdAt || b.submittedAt || b.timestamp || 0);
+            
+            // Sort in descending order (newest first)
+            return dateB - dateA;
+        });
+        
         renderApplications();
     } catch (error) {
         console.error('Error loading applications from API:', error);
