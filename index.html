@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Directory - ITCPR</title>
+    <link rel="shortcut icon" href="assets/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" type="text/css" href="css/staff.css">
+    <link rel="stylesheet" href="css/applications.css">
+
+    <!-- Add Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <!-- Login Section -->
+    <section id="loginSection" class="section-login">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="nav-brand">
+                    <span class="material-icons">percent</span>
+                    <div>
+                        <h1>ITCPR Staff Directory</h1>
+                    </div>
+                </div>
+                <p class="login-subtitle">Sign in to access the staff directory</p>
+            </div>
+            <button id="loginButton" class="btn-apply" onclick="signInWithSSO()" disabled>
+                <i class="fa-solid fa-key"></i>
+                Sign in with SSO
+            </button>
+            <br>
+            <small class="privacy-notice">By signing in, you agree to our <a href="https://itcpr.org/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</small>
+        </div>
+    </section>
+
+    <!-- Staff Section (Protected) -->
+    <section id="staffSection" class="hidden">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="nav-brand">
+                    <span class="material-icons" id="itcpr_logo">percent</span>
+                    <div>
+                        <h1>ITCPR Staff</h1>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="user-info" id="userInfo">
+                        <span id="userName">Loading...</span>
+                        <img id="userAvatar" src="assets/default-avatar.svg" alt="User" class="nav-avatar">
+                        <button id="logoutButton" class="btn-logout" onclick="signOutUser()">
+                            <span class="material-icons">logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area with Sidebar -->
+        <div class="main-wrapper">
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                
+                <nav class="sidebar-nav">
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="#staff" class="nav-link active" data-page="staff">
+                                <span class="material-icons">people</span>
+                                <span class="nav-text">Staff Directory</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#applications" class="nav-link" data-page="applications">
+                                <span class="material-icons">description</span>
+                                <span class="nav-text">Applications</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#users" class="nav-link" data-page="users">
+                                <span class="material-icons">manage_accounts</span>
+                                <span class="nav-text">User Management</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#finance" class="nav-link" data-page="finance">
+                                <span class="material-icons">account_balance_wallet</span>
+                                <span class="nav-text">Finance Management</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#emails" class="nav-link" data-page="emails">
+                                <span class="material-icons">email</span>
+                                <span class="nav-text">Send Emails</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#responsibilities" class="nav-link" data-page="responsibilities">
+                                <span class="material-icons">description</span>
+                                <span class="nav-text">Responsibilities</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Page Content -->
+            <main class="main-content">
+                <!-- Staff Directory Page -->
+                <div id="staffPage" class="page-content active">
+                    <div class="container">
+                        <section class="staff-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <h2>Our Team</h2>
+                                    <p>Meet the team that makes ITCPR possible</p>
+                                </div>
+                                <div class="section-actions">
+                                    <button id="addStaffButton" class="btn-add-staff" onclick="openAddStaffModal()" style="display: none;">
+                                        <i class="fas fa-user-plus"></i>
+                                        Add Staff
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="staff-grid" id="staffGrid">
+                                <!-- Staff cards will be populated by JavaScript -->
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Applications Page -->
+                <div id="applicationsPage" class="page-content">
+                    <div class="container">
+                        <section class="applications-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <h2>Applications</h2>
+                                    <p>Manage and review applications</p>
+                                </div>
+                                <div class="section-actions">
+                                    <button id="refreshApplicationsButton" class="btn-add-staff" onclick="window.applicationsManager && window.applicationsManager.refreshData()">
+                                        <i class="fas fa-sync-alt"></i>
+                                        Refresh
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Applications List -->
+                            <div class="applications-list" id="applicationsList">
+                                <!-- Applications will be loaded here -->
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- User Management Page -->
+                <div id="usersPage" class="page-content">
+                    <div class="container">
+                        <section class="users-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <h2>User Management</h2>
+                                    <p>Manage user accounts and permissions</p>
+                                </div>
+                                <div class="section-actions" style="display: none;">
+                                    <button id="addUserButton" class="btn-add-staff" onclick="window.usersManager && window.usersManager.addUserModal()">
+                                        <i class="fas fa-user-plus"></i>
+                                        Add User
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="users-content">
+                                <div class="users-card">
+                                    <h3>User Overview</h3>
+                                    <p>Manage user accounts, roles, and permissions.</p>
+                                    <div class="users-grid">
+                                        <div class="user-stat">
+                                            <span class="stat-number" id="totalUsers">0</span>
+                                            <span class="stat-label">Total Users</span>
+                                        </div>
+                                        <div class="user-stat">
+                                            <span class="stat-number" id="activeUsers">0</span>
+                                            <span class="stat-label">Active Users</span>
+                                        </div>
+                                        <div class="user-stat">
+                                            <span class="stat-number" id="adminUsers">0</span>
+                                            <span class="stat-label">Admins</span>
+                                        </div>
+                                    </div>
+                                    <button class="btn-primary" onclick="window.usersManager && window.usersManager.showUserManagement()">Manage Users</button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Finance Management Page -->
+                <div id="financePage" class="page-content">
+                    <div class="container">
+                        <section class="finance-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <h2>Finance Management</h2>
+                                    <p>Manage all the finance of ITCPR</p>
+                                </div>
+                                <div class="section-actions">
+                                    <button id="addFinanceButton" class="btn-add-staff" onclick="addFinanceModal()">
+                                        <i class="fas fa-plus"></i>
+                                        Add Finance
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Finance Stats -->
+                            <div class="overview-container">
+                                <div class="stat-card">
+                                    <div class="stat-header">
+                                        <span class="material-icons stat-icon">attach_money</span>
+                                        <span class="stat-title">Total Income</span>
+                                    </div>
+                                    <div class="stat-value" id="totalIncomeUSD">$ 0.00</div>
+                                    <div class="stat-value" id="totalIncomeBDT">৳ 0.00</div>
+                                </div>
+
+                                <div class="stat-card">
+                                    <div class="stat-header">
+                                        <span class="material-icons stat-icon">payments</span>
+                                        <span class="stat-title">Total Expense</span>
+                                    </div>
+                                    <div class="stat-value" id="totalExpenseUSD">$ 0.00</div>
+                                    <div class="stat-value" id="totalExpenseBDT">৳ 0.00</div>
+                                </div>
+
+                                <div class="stat-card">
+                                    <div class="stat-header">
+                                        <span class="material-icons stat-icon">currency_exchange</span>
+                                        <span class="stat-title">Current Balance</span>
+                                    </div>
+                                    <div class="stat-value" id="currentBalanceUSD">$ 0.00</div>
+                                    <div class="stat-value" id="currentBalanceBDT">৳ 0.00</div>
+                                </div>
+                            </div>
+
+                            <!-- Finance List -->
+                            <div class="section">
+                                <div class="finance-management" id="financeList">
+                                    <!-- Finance items will be loaded here -->
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Send Emails Page -->
+                <div id="emailsPage" class="page-content">
+                    <div class="container">
+                        <section class="emails-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <h2>Email Management</h2>
+                                    <p>Send bulk emails, notifications, and announcements</p>
+                                </div>
+                            </div>
+                            <div class="emails-content">
+                                <!-- Email content will be loaded by JavaScript -->
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Responsibilities Page -->
+                <div id="responsibilitiesPage" class="page-content">
+                    <div class="container">
+                        <section class="responsibilities-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <h2>Staff Responsibilities</h2>
+                                    <p>Policies, procedures, and guidelines for staff tasks</p>
+                                </div>
+                                <div class="section-actions">
+                                    <button id="addResponsibilityButton" class="btn-add-staff" onclick="addResponsibilityModal()">
+                                        <i class="fas fa-plus"></i>
+                                        Add Policy
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="responsibilities-content">
+                                <div class="responsibilities-grid" id="responsibilitiesGrid">
+                                    <!-- Responsibilities will be loaded here -->
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Settings Page -->
+                <div id="settingsPage" class="page-content">
+                    <div class="container">
+                        <section class="settings-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <h2>Settings</h2>
+                                    <p>Manage your account and application preferences</p>
+                                </div>
+                            </div>
+                            <div class="settings-content">
+                                <div class="settings-card">
+                                    <h3>Account Settings</h3>
+                                    <p>Manage your profile and account preferences.</p>
+                                    <button class="btn-primary">Edit Profile</button>
+                                </div>
+                                <div class="settings-card">
+                                    <h3>Application Settings</h3>
+                                    <p>Configure application behavior and notifications.</p>
+                                    <button class="btn-primary">Configure</button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Analytics Page -->
+                <div id="analyticsPage" class="page-content">
+                    <div class="container">
+                        <section class="analytics-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <h2>Analytics</h2>
+                                    <p>View staff directory statistics and insights</p>
+                                </div>
+                            </div>
+                            <div class="analytics-content">
+                                <div class="analytics-card">
+                                    <h3>Staff Overview</h3>
+                                    <div class="stats-grid">
+                                        <div class="stat-item">
+                                            <span class="stat-number" id="totalStaff">0</span>
+                                            <span class="stat-label">Total Staff</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-number" id="activeStaff">0</span>
+                                            <span class="stat-label">Active Staff</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Reports Page -->
+                <div id="reportsPage" class="page-content">
+                    <div class="container">
+                        <section class="reports-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <h2>Reports</h2>
+                                    <p>Generate and view staff reports</p>
+                                </div>
+                            </div>
+                            <div class="reports-content">
+                                <div class="reports-card">
+                                    <h3>Staff Directory Report</h3>
+                                    <p>Generate a comprehensive report of all staff members.</p>
+                                    <button class="btn-primary">Generate Report</button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </section>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Staff Detail Modal -->
+    <div id="staffModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeStaffModal()" aria-label="Close modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-body" id="modalBody">
+                <!-- Staff details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Staff Modal -->
+    <div id="addStaffModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeAddStaffModal()" aria-label="Close modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-body">
+                <div class="modal-header">
+                    <h2>Add New Staff Member</h2>
+                    <p>Select a user and assign them a staff position.</p>
+                </div>
+                
+                <form id="addStaffForm" class="add-staff-form">
+                    <div class="form-group">
+                        <label for="userSelect">Select User:</label>
+                        <select id="userSelect" class="form-control" required>
+                            <option value="">Loading users...</option>
+                        </select>
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="staffPosition">Position Title:</label>
+                        <select id="staffPosition" class="form-control" required>
+                            <option value="">Select a position...</option>
+                            <option value="Executive Director">Executive Director</option>
+                            <option value="Director of Operations">Director of Operations</option>
+                            <option value="Director of Research">Director of Research</option>
+                            <option value="Director of Policy">Director of Policy</option>
+                            <option value="Director of Outreach">Director of Outreach</option>
+                            <option value="Director of Finance">Director of Finance</option>
+                            <option value="Internship Coordinator">Internship Coordinator</option>
+                        </select>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Add Staff Member
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="closeAddStaffModal()">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/navigation.js"></script>
+    <script type="module" src="js/staff.js"></script>
+    <script type="module" src="js/admin.js"></script>
+    <script type="module" src="js/applications.js"></script>
+    <script type="module" src="js/users.js"></script>
+    <script type="module" src="js/finance.js"></script>
+    <script type="module" src="js/emails.js"></script>
+    <script type="module" src="js/responsibilities.js"></script>
+</body>
+</html>
