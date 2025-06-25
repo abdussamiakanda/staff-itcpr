@@ -561,6 +561,15 @@ function showApplicationModal(application) {
                                         </button>
                                     </div>
                                 ` : ''}
+                                ${application.fileUrls && application.fileUrls.additionalDocuments ? `
+                                    <div class="app-file-item">
+                                        <span class="material-icons">description</span>
+                                        <span class="app-file-name">Additional Documents: ${application.fileUrls.additionalDocuments}</span>
+                                        <button class="app-btn app-btn-outline" onclick="downloadFile('${application.fileUrls.additionalDocuments}')">
+                                            <span class="material-icons">open_in_new</span>
+                                        </button>
+                                    </div>
+                                ` : ''}
                             </div>
                         </div>
                     ` : ''}
