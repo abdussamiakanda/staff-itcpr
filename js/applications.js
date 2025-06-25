@@ -354,7 +354,7 @@ async function createUser(application) {
             </ul>
         `;
         const subject = `Welcome to ITCPR Portal`;
-        await sendEmail(email, subject, getEmailTemplate(application.name, message));
+        await sendEmail(application.email, subject, getEmailTemplate(application.name, message));
         return result;
     
     } catch (error) {
