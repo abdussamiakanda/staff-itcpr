@@ -137,6 +137,9 @@ function renderApplications() {
         `;
         return;
     }
+    const dayNow = new Date();
+    const dateToday = dayNow.getDate();
+
 
     const applicationsHTML = applications.map(application => {
         const appId = application.id || application._id;
@@ -202,20 +205,22 @@ function renderApplications() {
                     View
                 </button>
                 ${firestoreStatus === 'pending' ? `
-                    <button class="app-btn app-btn-success" onclick="updateApplicationStatus('${appId}', 'approved')">
-                        <span class="material-icons">check</span>
-                        Approve
-                    </button>
                     ${!interviewSent ? `
                         <button class="app-btn app-btn-warning" onclick="scheduleInterview('${appId}')">
                             <span class="material-icons">event</span>
                             Interview
                         </button>
                     ` : ''}
-                    <button class="app-btn app-btn-danger" onclick="updateApplicationStatus('${appId}', 'rejected')">
-                        <span class="material-icons">close</span>
-                        Reject
-                    </button>
+                    ${dateToday > 25 ? `
+                        <button class="app-btn app-btn-success" onclick="updateApplicationStatus('${appId}', 'approved')">
+                            <span class="material-icons">check</span>
+                            Approve
+                        </button>
+                        <button class="app-btn app-btn-danger" onclick="updateApplicationStatus('${appId}', 'rejected')">
+                            <span class="material-icons">close</span>
+                            Reject
+                        </button>
+                    ` : `${26 - dateToday} day(s) to decide`}
                 ` : ''}
             </div>
         </div>
