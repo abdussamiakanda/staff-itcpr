@@ -539,4 +539,235 @@
     .interview-form textarea.form-control {
         min-height: 60px;
     }
+}
+
+/* Reject Reason Modal Styles */
+.modal-reject {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: var(--spacing-lg);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-reject .modal-content {
+    background: var(--bg-main);
+    border-radius: 16px;
+    max-width: 500px;
+    width: 100%;
+    position: relative;
+    animation: modalSlideIn 0.3s ease-out;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-reject .modal-header {
+    padding: var(--spacing-xl);
+    border-bottom: none !important;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-bottom: 0 !important;
+}
+
+.modal-reject .modal-header h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.modal-reject .modal-header h3::before {
+    content: '';
+    width: 4px;
+    height: 24px;
+    background: var(--danger);
+    border-radius: 2px;
+}
+
+.modal-reject #rejectReasonInput {
+    width: 100%;
+    min-height: 120px;
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    line-height: 1.5;
+    color: var(--text-dark);
+    background: var(--bg-light);
+    transition: all 0.3s ease;
+    resize: vertical;
+    margin-top: var(--spacing-md);
+}
+
+.modal-reject #rejectReasonInput:focus {
+    outline: none;
+    border-color: var(--danger);
+    background: var(--bg-main);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.modal-reject #rejectReasonInput::placeholder {
+    color: var(--text-medium);
+    font-style: italic;
+}
+
+.modal-reject .modal-header .button-group {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: flex-end;
+    margin-top: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+.modal-reject .modal-header .app-btn {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 100px;
+    justify-content: center;
+}
+
+.modal-reject .modal-header .app-btn-primary {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(157, 157, 189, 0.3);
+}
+
+.modal-reject .modal-header .app-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(157, 157, 189, 0.4);
+    background: var(--primary-dark);
+}
+
+.modal-reject .modal-header .app-btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    border: 1px solid #dc2626;
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-reject .modal-header .app-btn-danger::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.modal-reject .modal-header .app-btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.modal-reject .modal-header .app-btn-danger:hover::before {
+    left: 100%;
+}
+
+.modal-reject .modal-header .app-btn-danger:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .modal-reject {
+        padding: var(--spacing-md);
+    }
+    
+    .modal-reject .modal-content {
+        max-width: 100%;
+        margin: var(--spacing-sm);
+    }
+    
+    .modal-reject .modal-header {
+        padding: var(--spacing-lg);
+    }
+    
+    .modal-reject .modal-header h3 {
+        font-size: 1.25rem;
+    }
+    
+    .modal-reject .modal-header .button-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .modal-reject .modal-header .app-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-reject {
+        padding: var(--spacing-sm);
+    }
+    
+    .modal-reject .modal-header {
+        padding: var(--spacing-md);
+    }
+    
+    .modal-reject .modal-header h3 {
+        font-size: 1.125rem;
+    }
+    
+    .modal-reject #rejectReasonInput {
+        min-height: 100px;
+        font-size: 0.9rem;
+    }
+    
+    .modal-reject .modal-header .app-btn {
+        padding: 10px 20px;
+        font-size: 0.85rem;
+    }
 } 

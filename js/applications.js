@@ -1,7 +1,6 @@
 import { collection, query, where, getDocs, setDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { db, auth } from './firebase-config.js';
-const { sendEmail, getEmailTemplate } = await import('./email.js');
-        
+const { sendEmail, getEmailTemplate, sendAcceptApplicationEmail, sendRejectApplicationEmail } = await import('./email.js');
 
 // Global state
 let applications = [];
@@ -113,6 +112,7 @@ async function loadApplications() {
         });
         
         renderApplications();
+        updateApplicationStats();
     } catch (error) {
         console.error('Error loading applications from API:', error);
         showError(error.message);
@@ -243,14 +243,20 @@ window.updateApplicationStatus = async (applicationId, status) => {
         }
 
         // Send email based on status using portal's email functions
-        const { sendAcceptApplicationEmail, sendRejectApplicationEmail } = await import('./email.js');
         let emailSent = false;
 
         if (status === 'approved') {
             emailSent = await sendAcceptApplicationEmail(application, application.field);
             await createUser(application);
         } else if (status === 'rejected') {
-            emailSent = await sendRejectApplicationEmail(application);
+            const rejectReason = await showRejectReasonModal();
+            if (rejectReason !== null) {
+                console.log("Application rejected with reason:", rejectReason);
+                emailSent = await sendRejectApplicationEmail(application, rejectReason);
+            } else {
+                console.log("Rejection canceled");
+                return;
+            }
         }
 
         // Store status data in Firestore only (don't update API)
@@ -273,6 +279,7 @@ window.updateApplicationStatus = async (applicationId, status) => {
         if (applicationIndex !== -1) {
             applications[applicationIndex].firestoreStatus = status;
             renderApplications();
+            updateApplicationStats();
         }
 
         // Close the modal
@@ -291,6 +298,38 @@ window.updateApplicationStatus = async (applicationId, status) => {
         alert('Error updating application status. Please try again.');
     }
 };
+
+async function showRejectReasonModal() {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'modal-reject';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Reject Application</h3>
+                    <textarea id="rejectReasonInput" placeholder="Please enter the reason for rejection" rows="5"></textarea>
+                    <div class="button-group">
+                        <button class="app-btn app-btn-primary" id="cancelRejectBtn">Close</button>
+                        <button class="app-btn app-btn-danger" id="confirmRejectBtn">Reject</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        // Handlers
+        document.getElementById('cancelRejectBtn').onclick = () => {
+            document.body.removeChild(modal);
+            resolve(null);
+        };
+
+        document.getElementById('confirmRejectBtn').onclick = () => {
+            const reason = document.getElementById('rejectReasonInput').value.trim();
+            document.body.removeChild(modal);
+            resolve(reason || null);
+        };
+    });
+}
 
 async function generateEmail(name) {
     const parts = name.trim().toLowerCase().split(/\s+/);
@@ -797,6 +836,7 @@ window.scheduleInterview = async (applicationId) => {
             if (applicationIndex !== -1) {
                 applications[applicationIndex].interviewSent = true;
                 renderApplications();
+                updateApplicationStats();
             }
 
             alert('Interview email sent successfully!');
@@ -807,4 +847,23 @@ window.scheduleInterview = async (applicationId) => {
         console.error('Error sending interview email:', error);
         alert('Error sending interview email. Please try again.');
     }
-}; 
+};
+
+// Update application statistics
+function updateApplicationStats() {
+    const totalApplications = applications.length;
+    const pendingApplications = applications.filter(app => (app.firestoreStatus || 'pending') === 'pending').length;
+    const acceptedApplications = applications.filter(app => app.firestoreStatus === 'approved').length;
+    const rejectedApplications = applications.filter(app => app.firestoreStatus === 'rejected').length;
+
+    // Update the DOM elements
+    const totalElement = document.getElementById('totalApplications');
+    const pendingElement = document.getElementById('pendingApplications');
+    const acceptedElement = document.getElementById('acceptedApplications');
+    const rejectedElement = document.getElementById('rejectedApplications');
+
+    if (totalElement) totalElement.textContent = totalApplications;
+    if (pendingElement) pendingElement.textContent = pendingApplications;
+    if (acceptedElement) acceptedElement.textContent = acceptedApplications;
+    if (rejectedElement) rejectedElement.textContent = rejectedApplications;
+}

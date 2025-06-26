@@ -118,7 +118,7 @@ export async function sendAcceptApplicationEmail(applicationData, group) {
     return sendEmail(email, subject, getEmailTemplate(name, message));
 }
 
-export async function sendRejectApplicationEmail(applicationData) {
+export async function sendRejectApplicationEmail(applicationData, rejectReason) {
     const { name, email } = applicationData;
 
     const subject = `Your Application to Join ITCPR is Rejected`;
@@ -135,6 +135,8 @@ export async function sendRejectApplicationEmail(applicationData) {
             encourage you to apply for future opportunities at ITCPR that align with your
             qualifications and interests.
         </p>
+        <b>Reason for rejection:</b>
+        ${markdownToHtml(rejectReason)}
         <p>
             We appreciate your interest in ITCPR and wish you all the best in your future
             endeavors.
@@ -142,4 +144,13 @@ export async function sendRejectApplicationEmail(applicationData) {
     `;
 
     return sendEmail(email, subject, getEmailTemplate(name, message));
+}
+
+function markdownToHtml(markdownText) {
+    // Make sure 'marked' is available
+    if (typeof marked === 'undefined') {
+      throw new Error("The 'marked' library is required. Include it via CDN or install it.");
+    }
+  
+    return marked.parse(markdownText);
 }
