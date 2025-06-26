@@ -744,7 +744,12 @@ select {
 .btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    transform: none !important;
+    pointer-events: none;
+}
+
+.btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
 }
 
 /* Email Card Styles */
@@ -2004,4 +2009,22 @@ select {
     gap: 12px;
     justify-content: flex-end;
     margin-top: 20px;
+}
+
+/* Loading States */
+.loading-spinner {
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Issue specific loading states */
+.issue-footer .btn:disabled,
+.issue-comment-footer .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }

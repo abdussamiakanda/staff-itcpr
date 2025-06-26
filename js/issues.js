@@ -8,6 +8,31 @@ import { userData } from './auth.js';
 let issues = [];
 let currentIssueView = null; // Track if we're viewing issue details
 
+// Loading state management
+function setButtonLoading(button, isLoading) {
+    if (!button) return;
+    
+    if (isLoading) {
+        button.disabled = true;
+        button.dataset.originalText = button.innerHTML;
+        button.innerHTML = `
+            <span class="material-icons loading-spinner">sync</span>
+            Loading...
+        `;
+    } else {
+        button.disabled = false;
+        if (button.dataset.originalText) {
+            button.innerHTML = button.dataset.originalText;
+            delete button.dataset.originalText;
+        }
+    }
+}
+
+function setButtonLoadingById(buttonId, isLoading) {
+    const button = document.getElementById(buttonId);
+    setButtonLoading(button, isLoading);
+}
+
 // Initialize the issues manager immediately
 window.issuesManager = {
     addIssueModal: showAddIssueModal,
@@ -95,7 +120,15 @@ function updateStats(issues) {
 }
 
 function showAddIssueModal() {
-    showIssueModal({});
+    // Set loading state for the Add Issue button
+    const addButton = document.getElementById('addIssueButton');
+    setButtonLoading(addButton, true);
+    
+    // Small delay to show loading state, then show modal
+    setTimeout(() => {
+        setButtonLoading(addButton, false);
+        showIssueModal({});
+    }, 100);
 }
 
 function showEditIssueModal(id) {
@@ -108,7 +141,19 @@ function showViewIssueModal(id) {
 }
 
 function showAddCommentModal(issueId) {
-    showCommentModal(issueId);
+    // Set loading state for the Add Comment button
+    const addCommentBtn = document.getElementById('addCommentBtn');
+    if (addCommentBtn) {
+        setButtonLoading(addCommentBtn, true);
+    }
+    
+    // Small delay to show loading state, then show modal
+    setTimeout(() => {
+        if (addCommentBtn) {
+            setButtonLoading(addCommentBtn, false);
+        }
+        showCommentModal(issueId);
+    }, 100);
 }
 
 function showEditCommentModal(issueId, commentId) {
@@ -117,32 +162,74 @@ function showEditCommentModal(issueId, commentId) {
 
 async function deleteComment(issueId, commentId) {
     if (!confirm('Delete this comment?')) return;
-    await deleteDoc(doc(db, 'issues', issueId, 'comments', commentId));
-    await notifyAdmins(`A Comment was Deleted in ITCPR Staff Portal`, `<b>${userData.name}</b> deleted a comment.`);
     
-    // If we're currently viewing this issue, refresh the comments
-    if (currentIssueView === issueId) {
-        await loadComments(issueId);
+    // Find the delete button and set loading state
+    const deleteButton = document.querySelector(`button[onclick*="deleteComment('${issueId}','${commentId}')"]`);
+    setButtonLoading(deleteButton, true);
+    
+    try {
+        await deleteDoc(doc(db, 'issues', issueId, 'comments', commentId));
+        await notifyAdmins(`A Comment was Deleted in ITCPR Staff Portal`, `<b>${userData.name}</b> deleted a comment.`);
+        
+        // If we're currently viewing this issue, refresh the comments
+        if (currentIssueView === issueId) {
+            await loadComments(issueId);
+        }
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        alert('Failed to delete comment. Please try again.');
+        setButtonLoading(deleteButton, false);
     }
 }
 
 async function deleteIssue(id) {
     if (!confirm('Delete this issue?')) return;
-    await deleteDoc(doc(db, 'issues', id));
-    await notifyAdmins(`An Issue was Deleted in ITCPR Staff Portal`, `<b>${userData.name}</b> deleted an issue.`);
-    backToIssues();
+    
+    // Find the delete button and set loading state
+    const deleteButton = document.querySelector(`button[onclick*="deleteIssue('${id}')"]`);
+    setButtonLoading(deleteButton, true);
+    
+    try {
+        await deleteDoc(doc(db, 'issues', id));
+        await notifyAdmins(`An Issue was Deleted in ITCPR Staff Portal`, `<b>${userData.name}</b> deleted an issue.`);
+        backToIssues();
+    } catch (error) {
+        console.error('Error deleting issue:', error);
+        alert('Failed to delete issue. Please try again.');
+        setButtonLoading(deleteButton, false);
+    }
 }
 
 async function resolveIssue(id) {
-    await updateDoc(doc(db, 'issues', id), { resolvedAt: serverTimestamp() });
-    await notifyAdmins(`An Issue was Resolved in ITCPR Staff Portal`, `<b>${userData.name}</b> resolved an issue.`);
-    backToIssues();
+    // Find the resolve button and set loading state
+    const resolveButton = document.querySelector(`button[onclick*="resolveIssue('${id}')"]`);
+    setButtonLoading(resolveButton, true);
+    
+    try {
+        await updateDoc(doc(db, 'issues', id), { resolvedAt: serverTimestamp() });
+        await notifyAdmins(`An Issue was Resolved in ITCPR Staff Portal`, `<b>${userData.name}</b> resolved an issue.`);
+        backToIssues();
+    } catch (error) {
+        console.error('Error resolving issue:', error);
+        alert('Failed to resolve issue. Please try again.');
+        setButtonLoading(resolveButton, false);
+    }
 }
 
 async function unresolveIssue(id) {
-    await updateDoc(doc(db, 'issues', id), { resolvedAt: null });
-    await notifyAdmins(`An Issue was Unresolved in ITCPR Staff Portal`, `<b>${userData.name}</b> marked an issue as unresolved.`);
-    backToIssues();
+    // Find the unresolve button and set loading state
+    const unresolveButton = document.querySelector(`button[onclick*="unresolveIssue('${id}')"]`);
+    setButtonLoading(unresolveButton, true);
+    
+    try {
+        await updateDoc(doc(db, 'issues', id), { resolvedAt: null });
+        await notifyAdmins(`An Issue was Unresolved in ITCPR Staff Portal`, `<b>${userData.name}</b> marked an issue as unresolved.`);
+        backToIssues();
+    } catch (error) {
+        console.error('Error unresolving issue:', error);
+        alert('Failed to unresolve issue. Please try again.');
+        setButtonLoading(unresolveButton, false);
+    }
 }
 
 async function viewIssueDetails(id) {
@@ -217,7 +304,7 @@ async function viewIssueDetails(id) {
         <div class="section">
             <div class="issue-section-header">
                 <h3>Comments</h3>
-                <button class="btn btn-primary" onclick="window.issuesManager.addCommentModal('${id}')">
+                <button class="btn btn-primary" id="addCommentBtn" onclick="window.issuesManager.addCommentModal('${id}')">
                     Add Comment
                 </button>
             </div>
@@ -335,6 +422,10 @@ window.submitComment = async function(issueId, commentId, isEdit) {
         return;
     }
     
+    // Find the submit button and set loading state
+    const submitButton = modal.querySelector('.btn-primary');
+    setButtonLoading(submitButton, true);
+    
     // Try multiple selectors to find the textarea
     let textarea = modal.querySelector('textarea[name="comment"]');
     if (!textarea) {
@@ -347,12 +438,14 @@ window.submitComment = async function(issueId, commentId, isEdit) {
     if (!textarea) {
         console.error('Comment textarea not found');
         console.log('Available elements in modal:', modal.innerHTML);
+        setButtonLoading(submitButton, false);
         return;
     }
     
     const comment = textarea.value.trim();
     if (!comment) {
         alert('Please enter a comment');
+        setButtonLoading(submitButton, false);
         return;
     }
     
@@ -380,6 +473,7 @@ window.submitComment = async function(issueId, commentId, isEdit) {
     } catch (error) {
         console.error('Error submitting comment:', error);
         alert('Failed to submit comment. Please try again.');
+        setButtonLoading(submitButton, false);
     }
 };
 
@@ -446,9 +540,14 @@ window.submitIssue = async function(isEdit, issueId) {
         return;
     }
     
+    // Find the submit button and set loading state
+    const submitButton = modal.querySelector('.btn-primary');
+    setButtonLoading(submitButton, true);
+    
     const form = modal.querySelector('#issueForm');
     if (!form) {
         console.error('Issue form not found');
+        setButtonLoading(submitButton, false);
         return;
     }
     
@@ -476,6 +575,7 @@ window.submitIssue = async function(isEdit, issueId) {
     } catch (error) {
         console.error('Error submitting issue:', error);
         alert('Failed to submit issue. Please try again.');
+        setButtonLoading(submitButton, false);
     }
 };
 
