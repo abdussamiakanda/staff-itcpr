@@ -5,6 +5,7 @@ import { initEmailsManager, refreshEmailsData } from './emails.js';
 import { initStaffDirectory, refreshStaffData } from './staff.js';
 import { initResponsibilitiesManager, refreshResponsibilitiesData } from './responsibilities.js';
 import { initTechnicalsManager, refreshTechnicalsData } from './technicals.js';
+import { initIssuesManager, refreshIssuesData } from './issues.js';
 
 // Global state
 let currentPage = 'staff';
@@ -72,7 +73,7 @@ function updateActiveState(activePage) {
 
 // Hide all pages
 function hideAllPages() {
-    const pages = ['staff', 'applications', 'technicals', 'users', 'finance', 'emails', 'responsibilities'];
+    const pages = ['staff', 'applications', 'technicals', 'users', 'finance', 'emails', 'responsibilities', 'issues', 'issueDetails'];
     pages.forEach(page => {
         const pageElement = document.getElementById(page + 'Page');
         if (pageElement) {
@@ -138,6 +139,18 @@ async function initializePageManager(pageName) {
                 pageManagers.technicals = {
                     refreshData: refreshTechnicalsData
                 };
+                break;
+                
+            case 'issues':
+                await initIssuesManager();
+                pageManagers.issues = {
+                    refreshData: refreshIssuesData
+                };
+                break;
+                
+            case 'issueDetails':
+                // No specific manager needed for issue details page
+                // It's handled by the issues manager
                 break;
                 
             default:

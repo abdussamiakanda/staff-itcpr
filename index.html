@@ -80,13 +80,19 @@
                         <li class="nav-item">
                             <a href="#users" class="nav-link" data-page="users">
                                 <span class="material-icons">manage_accounts</span>
-                                <span class="nav-text">User Management</span>
+                                <span class="nav-text">Users</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="#finance" class="nav-link" data-page="finance">
                                 <span class="material-icons">account_balance_wallet</span>
-                                <span class="nav-text">Finance Management</span>
+                                <span class="nav-text">Finances</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#issues" class="nav-link" data-page="issues">
+                                <span class="material-icons">bug_report</span>
+                                <span class="nav-text">Issues</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -216,6 +222,83 @@
                                 <div class="technicals-grid" id="technicalsGrid">
                                     <!-- Technical items will be loaded here -->
                                 </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Issues Page -->
+                <div id="issuesPage" class="page-content">
+                    <div class="container">
+                        <section class="issues-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <h2>Issues Management</h2>
+                                    <p>Manage all the issues/events of ITCPR</p>
+                                </div>
+                                <div class="section-actions">
+                                    <button id="addIssueButton" class="btn-add-staff" onclick="window.issuesManager && window.issuesManager.addIssueModal()">
+                                        <i class="fas fa-plus"></i>
+                                        Add Issue
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Issues Stats -->
+                            <div class="overview-container">
+                                <div class="stat-card">
+                                    <div class="stat-header">
+                                        <span class="material-icons stat-icon">bug_report</span>
+                                        <span class="stat-title">Total Issues</span>
+                                    </div>
+                                    <div class="stat-value" id="totalIssues">0</div>
+                                    <div class="stat-subtitle">All Time</div>
+                                </div>
+
+                                <div class="stat-card">
+                                    <div class="stat-header">
+                                        <span class="material-icons stat-icon">schedule</span>
+                                        <span class="stat-title">Pending</span>
+                                    </div>
+                                    <div class="stat-value" id="pendingIssues">0</div>
+                                    <div class="stat-subtitle">Awaiting Resolution</div>
+                                </div>
+
+                                <div class="stat-card">
+                                    <div class="stat-header">
+                                        <span class="material-icons stat-icon">check_circle</span>
+                                        <span class="stat-title">Resolved</span>
+                                    </div>
+                                    <div class="stat-value" id="resolvedIssues">0</div>
+                                    <div class="stat-subtitle">Completed</div>
+                                </div>
+
+                                <div class="stat-card">
+                                    <div class="stat-header">
+                                        <span class="material-icons stat-icon">event</span>
+                                        <span class="stat-title">Events</span>
+                                    </div>
+                                    <div class="stat-value" id="totalEvents">0</div>
+                                    <div class="stat-subtitle">Scheduled Events</div>
+                                </div>
+                            </div>
+
+                            <!-- Issues List -->
+                            <div class="issues-content">
+                                <div class="issues-grid" id="issuesGrid">
+                                    <!-- Issues will be loaded here -->
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Issue Details Page -->
+                <div id="issueDetailsPage" class="page-content">
+                    <div class="container">
+                        <section class="issue-details-section">
+                            <div class="dashboard-container" id="issueDetailsContainer">
+                                <!-- Issue details will be loaded here -->
                             </div>
                         </section>
                     </div>
@@ -515,6 +598,7 @@
     <script type="module" src="js/admin.js"></script>
     <script type="module" src="js/applications.js"></script>
     <script type="module" src="js/technicals.js"></script>
+    <script type="module" src="js/issues.js"></script>
     <script type="module" src="js/users.js"></script>
     <script type="module" src="js/finance.js"></script>
     <script type="module" src="js/emails.js"></script>
