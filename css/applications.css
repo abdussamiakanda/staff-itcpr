@@ -74,7 +74,7 @@
 }
 
 .app-status.rejected .app-status-badge {
-    background: var(--danger);
+    background: var(--error);
     color: white;
 }
 
@@ -393,7 +393,7 @@
 }
 
 .app-error-state .material-icons {
-    color: var(--danger);
+    color: var(--error);
 }
 
 .app-loading-state h3,
@@ -614,7 +614,7 @@
     content: '';
     width: 4px;
     height: 24px;
-    background: var(--danger);
+    background: var(--error);
     border-radius: 2px;
 }
 
@@ -636,7 +636,7 @@
 
 .modal-reject #rejectReasonInput:focus {
     outline: none;
-    border-color: var(--danger);
+    border-color: var(--error);
     background: var(--bg-main);
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
