@@ -382,7 +382,7 @@ async function createUser(application) {
             email: email,
             name: application.name,
             role: 'intern',
-            group: application.field,
+            group: application.field.toLowerCase(),
             pemail: application.email,
             photoURL: application.photoURL,
             createdAt: serverTimestamp(),
