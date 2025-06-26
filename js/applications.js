@@ -1,4 +1,4 @@
-import { collection, query, where, getDocs, setDoc, doc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, query, where, getDocs, setDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { db, auth } from './firebase-config.js';
 const { sendEmail, getEmailTemplate } = await import('./email.js');
         
@@ -346,6 +346,7 @@ async function createUser(application) {
             group: application.field,
             pemail: application.email,
             photoURL: application.photoURL,
+            createdAt: serverTimestamp(),
             uid: result.uid,
             university: application.university,
             status: 'pending'
