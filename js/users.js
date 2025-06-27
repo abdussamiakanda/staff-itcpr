@@ -290,17 +290,8 @@ async function terminateUser(userId) {
         // Delete user from users collection
         await deleteDoc(userRef);
 
-        // Remove from group members if applicable
-        if (userDetails.group) {
-            try {
-                await deleteDoc(doc(db, 'groups', userDetails.group, 'members', userId));
-            } catch (error) {
-                console.error('Error removing from group:', error);
-            }
-        }
-
         // Send termination email (if email functionality is available)
-        if (userDetails.email) {
+        if (userDetails.pemail) {
             try {
                 await sendTerminationEmail(userDetails.pemail, userDetails.name);
             } catch (error) {
@@ -324,7 +315,7 @@ async function sendTerminationEmail(email, name) {
     const message = `
         <p>
             We regret to inform you that your position at ITCPR has been terminated. To get
-            more information, please contact us at info@itcpr.org.
+            more information about your termination, please contact us at info@itcpr.org.
         </p>
         <p>
             We appreciate your contributions and wish you the best in your future endeavors.
