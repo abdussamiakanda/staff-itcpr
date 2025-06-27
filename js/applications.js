@@ -790,19 +790,29 @@ window.scheduleInterview = async (applicationId) => {
         // Send simple interview email
         const message = `
             <p>
-                We are pleased to inform you that your application has been successfully
-                shortlisted for the next stage, which is the interview process.
+                We are pleased to inform you that your application has been
+                successfully shortlisted for the next stage: the interview process.
             </p>
             <p>
-                At your earliest convenience, kindly reply to info@itcpr.org to coordinate
-                a suitable time for your interview. Please provide your availability, and
-                we will do our best to accommodate your schedule. Please specify your
-                preferred language for the interview. Currently, we only offer interviews
-                in English and Bangla. The interview will be conducted via Google Meet.
+                At your earliest convenience, please email us at <b>info@itcpr.org</b>
+                to coordinate a suitable time for your interview. Include your
+                availability and preferred language (English or Bangla), and we
+                will do our best to accommodate your schedule. The interview will
+                be conducted via Google Meet.
             </p>
             <p>
-                If you have any questions or require further information, please feel free to
-                reach out to info@itcpr.org. We look forward to speaking with you soon.
+                <b>Please respond within 3 days</b> of receiving this email to
+                confirm your interest. If we do not hear from you within this
+                time, your application may be withdrawn from consideration.
+            </p>
+            <p>
+                If you have any questions or need further assistance, feel free
+                to reach out to <b>info@itcpr.org</b>. We look forward to speaking
+                with you soon.
+            </p>
+            <p>
+                <i>Note: This message was sent from an automated system. Please
+                do not reply directly to this email.</i>
             </p>
         `;
 
