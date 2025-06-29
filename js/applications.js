@@ -384,7 +384,7 @@ async function createUser(application) {
             role: 'intern',
             group: application.field.toLowerCase(),
             pemail: application.email,
-            photoURL: application.photoURL,
+            photoURL: application.photoURL || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541",
             createdAt: serverTimestamp(),
             uid: result.uid,
             university: application.university,
