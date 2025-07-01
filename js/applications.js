@@ -7,7 +7,7 @@ let applications = [];
 let isLoading = false;
 
 // Wait for Firebase Auth to be ready
-async function waitForAuth() {
+export async function waitForAuth() {
     return new Promise((resolve) => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
             unsubscribe();

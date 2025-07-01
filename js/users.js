@@ -2,6 +2,7 @@ import { collection, query, getDocs, where, doc, getDoc, deleteDoc, setDoc, serv
 import { db } from './firebase-config.js';
 import { auth } from './firebase-config.js';
 import { deauthenticateZeroTierMember } from './zerotier.js';
+import { waitForAuth } from './applications.js';
 
 // Global state
 let users = [];
@@ -278,6 +279,15 @@ async function terminateUser(userId) {
             await deauthenticateZeroTierMember(userDetails.zerotierId);
         }
 
+        if (userDetails.discordId) {
+            await removeDiscordUser(userDetails.discordId);
+        }
+
+        const user = await waitForAuth();
+        const idToken = await user.getIdToken();
+
+        await removePortalUser(userId, idToken);
+
         // Move user data to terminated_users collection
         const terminatedUserRef = doc(db, 'terminated_users', userId);
         await setDoc(terminatedUserRef, {
@@ -307,6 +317,51 @@ async function terminateUser(userId) {
     } catch (error) {
         console.error('Error terminating user:', error);
         alert('Error terminating user. Please try again.');
+    }
+}
+
+async function removeDiscordUser(userId) {
+    try {
+        const response = await fetch('https://api.itcpr.org/discord/remove_user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            console.log("User removed successfully:", result.message);
+        } else {
+            console.error("Failed to remove user:", result.error);
+        }
+    } catch (error) {
+        console.error("Error during request:", error);
+    }
+}
+
+async function removePortalUser(uid, idToken) {
+    try {
+        const response = await fetch('https://api.itcpr.org/portal/remove_user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`
+            },
+            body: JSON.stringify({ uid })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.status === 'user_deleted') {
+            console.log("User removed:", result.uid);
+        } else {
+            console.error("Error removing user:", result.error);
+        }
+    } catch (error) {
+        console.error("Request failed:", error);
     }
 }
 
