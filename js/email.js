@@ -57,7 +57,7 @@ export function getEmailTemplate(name, message, subscribe = false) {
 
                 <div style="background-color: #f5f5f5; padding: 10px; text-align: center; font-size: 12px; color: #666;">
                     <p>© ${new Date().getFullYear()} ITCPR. All rights reserved.</p>
-                    <p>This is an automated message, please do not reply. ${subscribe ? 'You are receiving this email because you subscribed to our newsletter or other communications from us.' : ''}</p>
+                    <p>This is an automated message, please do not reply. ${subscribe ? 'You are receiving this email because you subscribed to our newsletter or other communications from us. <br> <a href="https://itcpr.org/unsubscribe">Click here</a> to unsubscribe.' : ''}</p>
                 </div>
             </div>
         </body>
