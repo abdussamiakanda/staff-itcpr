@@ -1,5 +1,5 @@
 import { collection, query, getDocs, where, orderBy, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-import { db } from './firebase-config.js';
+import { db, supabase } from './firebase-config.js';
 import { sendEmail, getEmailTemplate } from './email.js';
 
 // Global state
@@ -79,6 +79,7 @@ function showEmailSender() {
                                         <option value="members">Members</option>
                                         <option value="directors">Directors</option>
                                         <option value="server">Server Users</option>
+                                        <option value="subscribers">Subscribers</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
@@ -128,7 +129,6 @@ window.updateToField = function() {
     }
 }
 
-
 // Send bulk emails
 async function sendBulkEmails() {
     const emailList = document.getElementById('emailList').value;
@@ -152,6 +152,22 @@ async function sendBulkEmails() {
         targetUsers = users.filter(user => user.position === 'staff' && user.email);
     } else if (emailList === 'server') {
         targetUsers = users.filter(user => user.zerotierId && user.email);
+    } else if (emailList === 'subscribers') {
+        // Fetch subscribers from Supabase
+        const { data: subscribers, error } = await supabase
+            .from('subscribers')
+            .select('email');
+
+        if (error) {
+            console.error('Error fetching subscribers:', error);
+            alert('Error fetching subscribers. Please try again.');
+            return;
+        }
+
+        targetUsers = subscribers.map(subscriber => ({
+            email: subscriber.email,
+            name: 'Subscriber'
+        }));
     } else if (emailList === 'single') {
         targetUsers = [{email: document.getElementById('emailTo').value, name: document.getElementById('emailName').value}];
     } else {
@@ -173,11 +189,20 @@ async function sendBulkEmails() {
 
         for (const user of targetUsers) {
             try {
-                const result = await sendEmail(user.email, emailSubject, getEmailTemplate(user.name || 'User', markdownToHtml(emailBody)));
-                if (result) {
-                    successCount++;
+                if (emailList === 'subscribers') {
+                    const result = await sendEmail(user.email, emailSubject, getEmailTemplate(user.name || 'User', markdownToHtml(emailBody), true));
+                    if (result) {
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
                 } else {
-                    failCount++;
+                    const result = await sendEmail(user.email, emailSubject, getEmailTemplate(user.name || 'User', markdownToHtml(emailBody)));
+                    if (result) {
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
                 }
             } catch (error) {
                 console.error(`Failed to send email to ${user.email}:`, error);

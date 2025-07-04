@@ -35,7 +35,7 @@ export async function sendEmail(email, subject, message) {
     }
 }
 
-export function getEmailTemplate(name, message) {
+export function getEmailTemplate(name, message, subscribe = false) {
     return `
         <!DOCTYPE html>
         <html>
@@ -44,9 +44,9 @@ export function getEmailTemplate(name, message) {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
         <body>
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto;">
                 <div style="border-bottom: 1px solid rgb(157, 157, 189); text-align: center; width: 100%;">
-                    <span style="font-size: 35px; font-weight: bold; color: rgb(157, 157, 189);">ITCPR</span>
+                    <span style="font-size: 30px; font-weight: bold; color: rgb(157, 157, 189);">ITCPR</span>
                 </div>
                 
                 <div style="padding: 10px; background-color: #ffffff;">
@@ -57,7 +57,7 @@ export function getEmailTemplate(name, message) {
 
                 <div style="background-color: #f5f5f5; padding: 10px; text-align: center; font-size: 12px; color: #666;">
                     <p>© ${new Date().getFullYear()} ITCPR. All rights reserved.</p>
-                    <p>This is an automated message, please do not reply.</p>
+                    <p>This is an automated message, please do not reply. ${subscribe ? 'You are receiving this email because you subscribed to our newsletter or other communications from us.' : ''}</p>
                 </div>
             </div>
         </body>
