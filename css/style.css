@@ -1167,10 +1167,6 @@ select {
 }
 
 /* Technicals Page Styles */
-.technicals-section {
-    padding: var(--spacing-lg) 0;
-}
-
 .technicals-content {
     margin-top: var(--spacing-xl);
 }
@@ -1810,6 +1806,21 @@ select {
     color: var(--text-dark);
     line-height: 1.6;
     margin-bottom: var(--spacing-md);
+}
+
+.issue-description p {
+    margin: 0;
+    margin-bottom: var(--spacing-sm);
+}
+
+.issue-description ul, ol {
+    margin: var(--spacing-sm) 0;
+    padding-left: 20px;
+}
+
+.issue-description li {
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-dark);
 }
 
 .issue-footer {

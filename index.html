@@ -102,6 +102,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="#newsletter" class="nav-link" data-page="newsletter">
+                                <span class="material-icons">newspaper</span>
+                                <span class="nav-text">Newsletter</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="#responsibilities" class="nav-link" data-page="responsibilities">
                                 <span class="material-icons">description</span>
                                 <span class="nav-text">Responsibilities</span>
@@ -287,6 +293,33 @@
                             <div class="issues-content">
                                 <div class="issues-grid" id="issuesGrid">
                                     <!-- Issues will be loaded here -->
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Newsletter Page -->
+                <div id="newsletterPage" class="page-content">
+                    <div class="container">
+                        <section class="newsletter-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <h2>Newsletter Management</h2>
+                                    <p>Manage all the newsletters of ITCPR</p>
+                                </div>
+                                <div class="section-actions">
+                                    <button id="addNewsletterButton" class="btn-add-staff" onclick="window.newsletterManager && window.newsletterManager.addNewsletterModal()">
+                                        <i class="fas fa-plus"></i>
+                                        Add News
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Newsletter List -->
+                            <div class="newsletter-content">
+                                <div class="issues-grid" id="newsletterGrid">
+                                    <!-- Newsletters will be loaded here -->
                                 </div>
                             </div>
                         </section>

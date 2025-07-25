@@ -146,7 +146,7 @@ export async function sendRejectApplicationEmail(applicationData, rejectReason) 
     return sendEmail(email, subject, getEmailTemplate(name, message));
 }
 
-function markdownToHtml(markdownText) {
+export function markdownToHtml(markdownText) {
     // Make sure 'marked' is available
     if (typeof marked === 'undefined') {
       throw new Error("The 'marked' library is required. Include it via CDN or install it.");
