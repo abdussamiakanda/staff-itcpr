@@ -123,7 +123,7 @@ window.addFinanceModal = () => {
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Add Finance</h3>
-                <button class="btn-close" onclick="closeModal()">&times;</button>
+                <button class="btn-close" onclick="closeFinanceModal()">&times;</button>
             </div>
             
             <div class="modal-body">
@@ -187,14 +187,14 @@ window.addFinanceModal = () => {
                 <button class="btn btn-primary" onclick="addFinance()">
                     Add Finance
                 </button>
-                <button class="btn btn-outline" onclick="closeModal()">
+                <button class="btn btn-outline" onclick="closeFinanceModal()">
                     Cancel
                 </button>
             </div>
         </div>
     `;
-    
-    showModal(modalHtml);
+
+    showFinanceModal(modalHtml);
 };
 
 // Update categories based on type
@@ -285,18 +285,18 @@ window.addFinance = async () => {
             console.error('Error adding finance:', error);
             alert('Failed to add finance record');
             hideLoading();
-            closeModal();
+            closeFinanceModal();
             return;
         }
 
-        closeModal();
+        closeFinanceModal();
         await refreshFinanceData();
         hideLoading();
     } catch (error) {
         console.error('Error in addFinance:', error);
         alert('Failed to add finance record');
         hideLoading();
-        closeModal();
+        closeFinanceModal();
     }
 };
 
@@ -328,7 +328,7 @@ window.viewFinanceDetails = async function(id) {
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Finance Details</h3>
-                    <button class="btn-close" onclick="closeModal()">&times;</button>
+                    <button class="btn-close" onclick="closeFinanceModal()">&times;</button>
                 </div>
                 
                 <div class="modal-body">
@@ -370,7 +370,7 @@ window.viewFinanceDetails = async function(id) {
             </div>
         `;
         
-        showModal(modalHtml);
+        showFinanceModal(modalHtml);
     } catch (error) {
         console.error('Error in viewFinanceDetails:', error);
         alert('Failed to load finance details');
@@ -379,7 +379,7 @@ window.viewFinanceDetails = async function(id) {
 
 // Edit finance modal
 window.editFinanceModal = async function(id) {
-    closeModal();
+    closeFinanceModal();
     try {
         const { data: finance, error } = await supabaseClient
             .from('finances')
@@ -443,7 +443,7 @@ window.editFinanceModal = async function(id) {
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Edit Finance</h3>
-                    <button class="btn-close" onclick="closeModal()">&times;</button>
+                    <button class="btn-close" onclick="closeFinanceModal()">&times;</button>
                 </div>
                 
                 <div class="modal-body">
@@ -498,14 +498,14 @@ window.editFinanceModal = async function(id) {
                     <button class="btn btn-primary" onclick="saveFinance('${id}')">
                         Save Changes
                     </button>
-                    <button class="btn btn-outline" onclick="closeModal()">
+                    <button class="btn btn-outline" onclick="closeFinanceModal()">
                         Cancel
                     </button>
                 </div>
             </div>
         `;
         
-        showModal(modalHtml);
+        showFinanceModal(modalHtml);
     } catch (error) {
         console.error('Error in editFinanceModal:', error);
         alert('Failed to load finance details for editing');
@@ -566,7 +566,7 @@ window.saveFinance = async function(id) {
             return;
         }
 
-        closeModal();
+        closeFinanceModal();
         await refreshFinanceData();
         hideLoading();
     } catch (error) {
@@ -578,12 +578,12 @@ window.saveFinance = async function(id) {
 
 // Delete finance modal
 window.deleteFinanceModal = function(id) {
-    closeModal();
+    closeFinanceModal();
     const modalHtml = `
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Delete Finance Record</h3>
-                <button class="btn-close" onclick="closeModal()">&times;</button>
+                <button class="btn-close" onclick="closeFinanceModal()">&times;</button>
             </div>
             
             <div class="modal-body">
@@ -594,14 +594,13 @@ window.deleteFinanceModal = function(id) {
                 <button class="btn btn-danger" onclick="deleteFinance('${id}')">
                     Delete
                 </button>
-                <button class="btn btn-outline" onclick="closeModal()">
+                <button class="btn btn-outline" onclick="closeFinanceModal()">
                     Cancel
                 </button>
             </div>
         </div>
     `;
-    
-    showModal(modalHtml);
+    showFinanceModal(modalHtml);
 };
 
 // Delete finance function
@@ -620,7 +619,7 @@ window.deleteFinance = async function(id) {
             return;
         }
 
-        closeModal();
+        closeFinanceModal();
         await refreshFinanceData();
         hideLoading();
     } catch (error) {
@@ -641,7 +640,7 @@ async function imageToDataURL(file) {
 }
 
 // Show modal function
-function showModal(content) {
+function showFinanceModal(content) {
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
     modal.id = 'financeModal';
@@ -651,12 +650,15 @@ function showModal(content) {
 }
 
 // Close modal function
-window.closeModal = function() {
+function closeFinanceModal() {
     const modal = document.getElementById('financeModal');
+    console.log('Closing modal:', modal);
     if (modal) {
         modal.remove();
     }
-};
+}
+
+window.closeFinanceModal = closeFinanceModal;
 
 // Show loading function
 function showLoading() {
