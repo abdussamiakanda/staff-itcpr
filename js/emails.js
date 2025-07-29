@@ -211,7 +211,6 @@ async function sendBulkEmails() {
         }
 
         alert(`Email sent successfully to ${successCount} out of ${targetUsers.length} recipients.`);
-        clearForm();
     } catch (error) {
         console.error('Error sending bulk emails:', error);
         alert('Error sending emails. Please try again.');
