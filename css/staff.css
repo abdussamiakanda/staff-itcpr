@@ -370,6 +370,16 @@
     border-bottom: 1px solid var(--border-color);
 }
 
+.modal-staff-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
+}
+
 .modal-staff-avatar {
     width: 100px;
     height: 100px;

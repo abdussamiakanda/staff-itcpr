@@ -1304,6 +1304,11 @@ select {
     color: #2E7D32;
 }
 
+.status-badge.flagged {
+    background: var(--warning-lighter);
+    color: #ae36b2;
+}
+
 .status-badge.inactive {
     background: #F5F5F5;
     color: #616161;

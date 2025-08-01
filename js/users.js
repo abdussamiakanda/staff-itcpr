@@ -1,4 +1,4 @@
-import { collection, query, getDocs, where, doc, getDoc, deleteDoc, setDoc, serverTimestamp, orderBy } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, query, getDocs, where, updateDoc, doc, getDoc, deleteDoc, setDoc, serverTimestamp, orderBy } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { db } from './firebase-config.js';
 import { auth } from './firebase-config.js';
 import { deauthenticateZeroTierMember } from './zerotier.js';
@@ -22,18 +22,12 @@ async function initUsersManager() {
 // Load users from Firestore
 async function loadUsers() {
     try {
-        if (!db) {
-            console.warn('Firebase not initialized yet');
-            return;
-        }
-
         // Load active users
         const usersRef = collection(db, 'users');
         const usersSnap = await getDocs(usersRef);
         users = usersSnap.docs.map(doc => ({
             uid: doc.id,
-            ...doc.data(),
-            status: 'active'
+            ...doc.data()
         }));
 
         // Load terminated users
@@ -93,13 +87,10 @@ function renderUsersTable() {
                 <td>${user.email || 'No email'}</td>
                 <td>${capitalize(user.group || 'N/A')}</td>
                 <td>${capitalize(user.role || 'N/A')}</td>
-                <td><span class="status-badge active">Active</span></td>
+                <td><span class="status-badge ${user.status}">${user.status}</span></td>
                 <td>
                     <button class="btn-small btn-secondary" onclick="window.usersManager.viewUserDetails('${user.uid}', 'active')">
                         View
-                    </button>
-                    <button class="btn-small btn-danger" onclick="window.usersManager.terminateUser('${user.uid}')">
-                        Terminate
                     </button>
                 </td>
             </tr>
@@ -114,7 +105,7 @@ function renderUsersTable() {
                 <td>${user.email || 'No email'}</td>
                 <td>${capitalize(user.group || 'N/A')}</td>
                 <td>Terminated</td>
-                <td><span class="status-badge terminated">Terminated</span></td>
+                <td><span class="status-badge maintenance">Terminated</span></td>
                 <td>
                     <button class="btn-small btn-secondary" onclick="window.usersManager.viewUserDetails('${user.uid}', 'terminated')">
                         View
@@ -130,11 +121,6 @@ function renderUsersTable() {
 // View user details
 async function viewUserDetails(userId, userType = 'active') {
     try {
-        if (!db) {
-            console.warn('Firebase not initialized yet');
-            return;
-        }
-
         let userDetails = null;
 
         if (userType === 'terminated') {
@@ -229,6 +215,16 @@ function showUserDetailsModal(userDetails, userType = 'active') {
                             </div>
                         </div>
                     </div>
+                    ${userType === 'active' || userType === 'flagged' ? `
+                        <div class="modal-staff-footer">
+                            <button class="btn-small btn-danger" onclick="window.usersManager.terminateUser('${userDetails.uid}')">
+                                Terminate
+                            </button>
+                            <button class="btn-small btn-danger" onclick="window.usersManager.changeUserStatus('${userDetails.uid}')">
+                                ${userDetails.status === 'active' ? 'Flag User' : 'Reinstate User'}
+                            </button>
+                        </div>` : ''
+                    }
                 </div>
             </div>
         </div>
@@ -252,6 +248,29 @@ function formatDate(dateString) {
         month: 'short',
         day: 'numeric'
     });
+}
+
+// change user status
+async function changeUserStatus(userId) {
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+        alert('User not found');
+        return;
+    }
+
+    const userDetails = userSnap.data();
+    const newStatus = userDetails.status === 'active' ? 'flagged' : 'active';
+
+    try {
+        await updateDoc(userRef, { status: newStatus });
+        await loadUsers();
+        renderUserManagement();
+        document.querySelector('.modal-overlay').remove();
+    } catch (error) {
+        console.error('Error changing user status:', error);
+    }
 }
 
 // Terminate user
@@ -541,6 +560,7 @@ async function initializeUsersManager() {
                 refreshData: refreshUsersData,
                 viewUserDetails: viewUserDetails,
                 terminateUser: terminateUser,
+                changeUserStatus : changeUserStatus,
                 addUserModal: addUserModal,
                 addUser: addUser,
                 showUserManagement: renderUserManagement
