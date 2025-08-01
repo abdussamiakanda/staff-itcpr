@@ -652,7 +652,6 @@ function showFinanceModal(content) {
 // Close modal function
 function closeFinanceModal() {
     const modal = document.getElementById('financeModal');
-    console.log('Closing modal:', modal);
     if (modal) {
         modal.remove();
     }
