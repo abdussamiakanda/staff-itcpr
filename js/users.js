@@ -3,6 +3,7 @@ import { db } from './firebase-config.js';
 import { auth } from './firebase-config.js';
 import { deauthenticateZeroTierMember } from './zerotier.js';
 import { waitForAuth } from './applications.js';
+import { sendEmail, getEmailTemplate } from './email.js';
 
 // Global state
 let users = [];
@@ -388,7 +389,7 @@ async function removePortalUser(uid, idToken) {
 async function sendTerminationEmail(email, name) {
     const message = `
         <p>
-            We regret to inform you that your position at ITCPR has been terminated. To get
+            We are informing you that your position at ITCPR has been terminated. To get
             more information about your termination, please contact us at info@itcpr.org.
         </p>
         <p>
@@ -409,62 +410,57 @@ function addUserModal() {
                 <i class="fas fa-times"></i>
             </button>
             <div class="modal-body">
-                <div class="modal-header">
-                    <h2>Add New User</h2>
+                <div class="modal-header" style="display: flex; flex-direction: column; align-items: flex-start; padding: 0 0 20px 0;">
+                    <h2 style="margin: 0;">Add New User</h2>
                     <p>Enter user information to create a new account.</p>
                 </div>
                 
-                <form id="addUserForm" class="add-staff-form">
-                    <div class="form-group">
-                        <label for="userName">Name:</label>
+                <form id="addUserForm" class="add-staff-form" style="gap: 0;">
+                    <div class="form-group" style="gap: 0;">
+                        <label for="userName">Full Name:</label>
                         <input type="text" id="userName" class="form-control" required>
                     </div>
-                
-                    <div class="form-group">
-                        <label for="userEmail">Email:</label>
+
+                    <div class="form-group" style="gap: 0;">
+                        <label for="userEmail">Personal Email:</label>
                         <input type="email" id="userEmail" class="form-control" required>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" style="gap: 0;">
                         <label for="userGroup">Group:</label>
                         <select id="userGroup" class="form-control" required>
                             <option value="">Select a group...</option>
-                            <option value="cs">Computer Science</option>
-                            <option value="ai">Artificial Intelligence</option>
-                            <option value="data">Data Science</option>
-                            <option value="admin">Administration</option>
-                            <option value="general">General</option>
+                            <option value="spintronics">Spintronics</option>
+                            <option value="photonics">Photonics</option>
                         </select>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" style="gap: 0;">
                         <label for="userRole">Role:</label>
                         <select id="userRole" class="form-control" required>
                             <option value="">Select a role...</option>
-                            <option value="student">Student</option>
-                            <option value="researcher">Researcher</option>
-                            <option value="faculty">Faculty</option>
-                            <option value="admin">Admin</option>
-                            <option value="support">Support</option>
+                            <option value="member">Member</option>
+                            <option value="collaborator">Collaborator</option>
+                            <option value="supervisor">Supervisor</option>
                         </select>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" style="gap: 0;">
                         <label for="userUniversity">University:</label>
                         <input type="text" id="userUniversity" class="form-control">
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" style="gap: 0;">
                         <label for="userMajor">Major:</label>
                         <input type="text" id="userMajor" class="form-control">
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn-primary" onclick="window.usersManager.addUser()">
+                        <button type="button" class="btn-primary" onclick="window.usersManager.addUser()" style="padding: 10px 20px;">
                             <i class="fas fa-plus"></i>
                             Add User
                         </button>
-                        <button type="button" class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">
+                        <button type="button" class="btn-secondary" onclick="this.closest('.modal-overlay').remove()" style="padding: 10px 20px;">
                             Cancel
                         </button>
                     </div>
@@ -481,12 +477,12 @@ async function addUser() {
     const form = document.getElementById('addUserForm');
     if (!form) return;
 
-    const userName = document.getElementById('userName').value;
-    const userEmail = document.getElementById('userEmail').value;
+    const userName = document.getElementById('userName').value.trim();
+    const userEmail = document.getElementById('userEmail').value.trim();
     const userGroup = document.getElementById('userGroup').value;
     const userRole = document.getElementById('userRole').value;
-    const userUniversity = document.getElementById('userUniversity').value;
-    const userMajor = document.getElementById('userMajor').value;
+    const userUniversity = document.getElementById('userUniversity').value.trim();
+    const userMajor = document.getElementById('userMajor').value.trim();
 
     if (!userName || !userEmail || !userGroup || !userRole) {
         alert('Please fill in all required fields');
@@ -494,25 +490,68 @@ async function addUser() {
     }
 
     try {
-        if (!db) {
-            console.warn('Firebase not initialized yet');
-            return;
+        const email = await generateEmail(userName);
+
+        const user = auth.currentUser;
+        if (!user) {
+        throw new Error("User not logged in");
+        }
+    
+        const idToken = await user.getIdToken();
+    
+        const response = await fetch("https://api.itcpr.org/portal/newuser", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${idToken}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email: email.trim().toLowerCase()
+            })
+        });
+    
+        const result = await response.json();
+    
+        if (!response.ok) {
+        throw new Error(result.error || "Unknown error");
         }
 
-        const userData = {
+        const newUserData = {
+            email: email,
             name: userName,
-            email: userEmail,
-            group: userGroup,
             role: userRole,
-            university: userUniversity,
-            major: userMajor,
+            group: userGroup,
+            pemail: userEmail,
+            photoURL: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541",
             createdAt: serverTimestamp(),
-            status: 'active'
-        };
-
-        // Add to users collection directly
-        const usersRef = collection(db, 'users');
-        await setDoc(doc(usersRef), userData);
+            uid: result.uid,
+            university: userUniversity,
+            status: 'active',
+            major: userMajor
+        }
+        await setDoc(doc(db, 'users', result.uid), newUserData);
+        // send new user email
+        const message = `
+            <b>Your New ITCPR Email Credentials</b>
+            <ul>
+            <li>Email Address: ${email}</li>
+            <li>Temporary Password: itcprnewuser</li>
+            </ul>
+            <b>What You Need to Do</b>
+            <ul>
+            <li>Visit the portal: https://portal.itcpr.org</li>
+            <li>Log in using the email and temporary password above</li>
+            <li>After logging in, you will be prompted to join our Discord server</li>
+            <li>Click Join button and join the server</li>
+            <li>Download Discord desktop app and the mobile app to join the server</li>
+            <li>Click on the person icon on the top right corner in the portal.</li>
+            <li>Click on change password, and change your password immediately</li>
+            <li>You can now start using the portal and other services</li>
+            </ul>
+            <b>Explore our services to be familiar with the portal. All our communication is done through Discord and the webmail.</b>
+        `;
+        const subject = `Welcome to ITCPR Portal`;
+        await sendEmail(userEmail, subject, getEmailTemplate(userName, message));
 
         // Close modal
         document.querySelector('.modal-overlay').remove();
@@ -526,6 +565,24 @@ async function addUser() {
         console.error('Error adding user:', error);
         alert('Error adding user. Please try again.');
     }
+}
+
+async function generateEmail(name) {
+    const parts = name.trim().toLowerCase().split(/\s+/);
+  
+    if (parts.length === 0) return '';
+  
+    const initials = parts.slice(0, -1).map(part => part[0] || '').join('');
+    const lastName = parts[parts.length - 1];
+  
+    const email = (initials + lastName).replace(/[^a-z0-9]/g, '') + '@mail.itcpr.org';
+    const userRef = collection(db, 'users');
+    const q = query(userRef, where('email', '==', email));
+    const qSnap = await getDocs(q);
+    if (qSnap.empty) {
+        return email;
+    }
+    return await generateEmail(name+'1');
 }
 
 // Capitalize first letter

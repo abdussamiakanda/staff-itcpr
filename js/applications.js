@@ -341,7 +341,7 @@ async function generateEmail(name) {
     if (qSnap.empty) {
         return email;
     }
-    return generateEmail(name+'1');
+    return await generateEmail(name+'1');
 }
 
 // Create user in portal
@@ -357,14 +357,14 @@ async function createUser(application) {
         const idToken = await user.getIdToken();
     
         const response = await fetch("https://api.itcpr.org/portal/newuser", {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${idToken}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            email: email.trim().toLowerCase()
-        })
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${idToken}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email: email.trim().toLowerCase()
+            })
         });
     
         const result = await response.json();
