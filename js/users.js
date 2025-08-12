@@ -417,18 +417,18 @@ function addUserModal() {
                 
                 <form id="addUserForm" class="add-staff-form" style="gap: 0;">
                     <div class="form-group" style="gap: 0;">
-                        <label for="userName">Full Name:</label>
-                        <input type="text" id="userName" class="form-control" required>
+                        <label for="newUserName">Full Name:</label>
+                        <input type="text" id="newUserName" name="newUserName" class="form-control" required>
                     </div>
 
                     <div class="form-group" style="gap: 0;">
-                        <label for="userEmail">Personal Email:</label>
-                        <input type="email" id="userEmail" class="form-control" required>
+                        <label for="newUserEmail">Personal Email:</label>
+                        <input type="email" id="newUserEmail" name="newUserEmail" class="form-control" required>
                     </div>
 
                     <div class="form-group" style="gap: 0;">
-                        <label for="userGroup">Group:</label>
-                        <select id="userGroup" class="form-control" required>
+                        <label for="newUserGroup">Group:</label>
+                        <select id="newUserGroup" name="newUserGroup" class="form-control" required>
                             <option value="">Select a group...</option>
                             <option value="spintronics">Spintronics</option>
                             <option value="photonics">Photonics</option>
@@ -436,8 +436,8 @@ function addUserModal() {
                     </div>
 
                     <div class="form-group" style="gap: 0;">
-                        <label for="userRole">Role:</label>
-                        <select id="userRole" class="form-control" required>
+                        <label for="newUserRole">Role:</label>
+                        <select id="newUserRole" name="newUserRole" class="form-control" required>
                             <option value="">Select a role...</option>
                             <option value="member">Member</option>
                             <option value="collaborator">Collaborator</option>
@@ -446,13 +446,13 @@ function addUserModal() {
                     </div>
 
                     <div class="form-group" style="gap: 0;">
-                        <label for="userUniversity">University:</label>
-                        <input type="text" id="userUniversity" class="form-control">
+                        <label for="newUserUniversity">University:</label>
+                        <input type="text" id="newUserUniversity" name="newUserUniversity" class="form-control">
                     </div>
 
                     <div class="form-group" style="gap: 0;">
-                        <label for="userMajor">Major:</label>
-                        <input type="text" id="userMajor" class="form-control">
+                        <label for="newUserMajor">Major:</label>
+                        <input type="text" id="newUserMajor" name="newUserMajor" class="form-control">
                     </div>
 
                     <div class="form-actions">
@@ -477,12 +477,12 @@ async function addUser() {
     const form = document.getElementById('addUserForm');
     if (!form) return;
 
-    const userName = document.getElementById('userName').value.trim();
-    const userEmail = document.getElementById('userEmail').value.trim();
-    const userGroup = document.getElementById('userGroup').value;
-    const userRole = document.getElementById('userRole').value;
-    const userUniversity = document.getElementById('userUniversity').value.trim();
-    const userMajor = document.getElementById('userMajor').value.trim();
+    const userName = document.getElementById('newUserName').value.trim();
+    const userEmail = document.getElementById('newUserEmail').value.trim();
+    const userGroup = document.getElementById('newUserGroup').value;
+    const userRole = document.getElementById('newUserRole').value;
+    const userUniversity = document.getElementById('newUserUniversity').value.trim();
+    const userMajor = document.getElementById('newUserMajor').value.trim();
 
     if (!userName || !userEmail || !userGroup || !userRole) {
         alert('Please fill in all required fields');
