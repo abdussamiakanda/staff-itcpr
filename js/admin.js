@@ -168,18 +168,38 @@ function checkAdminAccess(userData) {
 }
 
 // Initialize admin panel when user is authenticated
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        // User is authenticated, initialize admin panel
-        if (!window.adminPanel) {
-            window.adminPanel = new AdminPanel();
-            await window.adminPanel.init();
+// Wait for auth to be initialized before setting up the observer
+if (auth) {
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            // User is authenticated, initialize admin panel
+            if (!window.adminPanel) {
+                window.adminPanel = new AdminPanel();
+                await window.adminPanel.init();
+            }
+        } else {
+            // User is not authenticated, clear admin panel
+            window.adminPanel = null;
         }
-    } else {
-        // User is not authenticated, clear admin panel
-        window.adminPanel = null;
-    }
-});
+    });
+} else {
+    console.error('Firebase Auth is not initialized');
+    // Retry after a short delay
+    setTimeout(() => {
+        if (auth) {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    if (!window.adminPanel) {
+                        window.adminPanel = new AdminPanel();
+                        await window.adminPanel.init();
+                    }
+                } else {
+                    window.adminPanel = null;
+                }
+            });
+        }
+    }, 100);
+}
 
 // Export the checkAdminAccess function for use in auth.js
 export { checkAdminAccess }; 

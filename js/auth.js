@@ -156,35 +156,65 @@ function showAlert(message) {
 }
 
 // Authentication state observer
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        // Get user data from database
-        userData = await getUserData(user.uid);
-        
-        if (userData) {
-            // Check if user is staff
-            const isStaff = await checkStaffAccess(userData);
+// Wait for auth to be initialized before setting up the observer
+if (auth) {
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            // Get user data from database
+            userData = await getUserData(user.uid);
             
-            if (isStaff) {
-                // User is staff, show authenticated content
-                showAuthenticatedContent();
-                updateUserInfo(userData);
-                // Check admin access
-                checkAdminAccess(userData);
+            if (userData) {
+                // Check if user is staff
+                const isStaff = await checkStaffAccess(userData);
+                
+                if (isStaff) {
+                    // User is staff, show authenticated content
+                    showAuthenticatedContent();
+                    updateUserInfo(userData);
+                    // Check admin access
+                    checkAdminAccess(userData);
+                } else {
+                    // User is not staff, show access denied
+                    showAccessDenied();
+                    await signOut(auth);
+                }
             } else {
-                // User is not staff, show access denied
-                showAccessDenied();
+                // User not found in database, sign out
                 await signOut(auth);
             }
         } else {
-            // User not found in database, sign out
-            await signOut(auth);
+            // User is signed out
+            showLoginScreen();
         }
-    } else {
-        // User is signed out
-        showLoginScreen();
-    }
-});
+    });
+} else {
+    console.error('Firebase Auth is not initialized');
+    // Retry after a short delay
+    setTimeout(() => {
+        if (auth) {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userData = await getUserData(user.uid);
+                    if (userData) {
+                        const isStaff = await checkStaffAccess(userData);
+                        if (isStaff) {
+                            showAuthenticatedContent();
+                            updateUserInfo(userData);
+                            checkAdminAccess(userData);
+                        } else {
+                            showAccessDenied();
+                            await signOut(auth);
+                        }
+                    } else {
+                        await signOut(auth);
+                    }
+                } else {
+                    showLoginScreen();
+                }
+            });
+        }
+    }, 100);
+}
 
 // Show login screen
 function showLoginScreen() {

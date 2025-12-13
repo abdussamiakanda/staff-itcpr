@@ -1,6 +1,21 @@
 import { collection, query, getDocs, where, orderBy, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-import { db, supabase } from './firebase-config.js';
+import { db } from './firebase-config.js';
 import { sendEmail, getEmailTemplate } from './email.js';
+
+// Get Supabase client from global scope (loaded via script tag in index.html)
+// Supabase is loaded as a script tag, so we can access it via window.supabase
+let supabase = null;
+
+function getSupabaseClient() {
+    if (!supabase && typeof window !== 'undefined' && window.supabase) {
+        const { createClient } = window.supabase;
+        supabase = createClient(
+            'https://fkhqjzzqbypkwrpnldgk.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraHFqenpxYnlwa3dycG5sZGdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2MzM0OTAsImV4cCI6MjA2MzIwOTQ5MH0.O5LjcwITJT3hIbnNnXJNYYYPDeOGBKkLmU6EyUUY478'
+        );
+    }
+    return supabase;
+}
 
 // Global state
 let users = [];
@@ -154,7 +169,12 @@ async function sendBulkEmails() {
         targetUsers = users.filter(user => user.zerotierId && user.email);
     } else if (emailList === 'subscribers') {
         // Fetch subscribers from Supabase
-        const { data: subscribers, error } = await supabase
+        const supabaseClient = getSupabaseClient();
+        if (!supabaseClient) {
+            alert('Supabase is not available. Please refresh the page.');
+            return;
+        }
+        const { data: subscribers, error } = await supabaseClient
             .from('subscribers')
             .select('email');
 
