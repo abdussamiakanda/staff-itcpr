@@ -154,7 +154,7 @@ function showNewsletterModal(news = {}, isEdit = false) {
                         <label for="type">Type</label>
                         <select id="type" name="type" onchange="toggleDateTime()" required>
                             <option value="issue" ${news.type === 'issue' ? 'selected' : ''}>Issue</option>
-                            <option value="event" ${news.type === 'news' ? 'selected' : ''}>News</option>
+                            <option value="news" ${news.type === 'news' ? 'selected' : ''}>News</option>
                         </select>
                     </div>
                     <div class="form-group">
