@@ -1,0 +1,225 @@
+.technicalsSection {
+  width: 100%;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 2px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.sectionTitle h2 {
+  font-size: 2.25rem;
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-dark);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--text-dark) 0%, var(--text-medium) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.sectionTitle p {
+  color: var(--text-medium);
+  font-size: 1rem;
+  font-weight: 500;
+  margin-top: var(--spacing-xs);
+}
+
+.syncSection {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin-top: var(--spacing-xl);
+}
+
+.syncCard {
+  background: var(--bg-main);
+  border-radius: 16px;
+  padding: var(--spacing-2xl);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06),
+              0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border-color);
+  max-width: 650px;
+  width: 100%;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.syncCard:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1),
+              0 2px 6px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.syncHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.syncHeader .material-icons {
+  font-size: 1.75rem;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.syncHeader h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.syncDescription {
+  color: var(--text-medium);
+  line-height: 1.6;
+  font-size: 0.9375rem;
+  margin-bottom: var(--spacing-xl);
+}
+
+.syncButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 12px 24px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(157, 157, 189, 0.2);
+}
+
+.syncButton:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(157, 157, 189, 0.3);
+}
+
+.syncButton:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(157, 157, 189, 0.2);
+}
+
+.syncButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.syncButton .material-icons {
+  font-size: 1.25rem;
+  transition: transform 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.syncButton:hover:not(:disabled) .material-icons:not(.hourglass_empty) {
+  transform: rotate(180deg);
+}
+
+.syncButton:disabled .material-icons.hourglass_empty {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.syncStatus {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.syncStatus.success {
+  background: rgba(34, 197, 94, 0.08);
+  color: #15803d;
+  border: 1px solid rgba(34, 197, 94, 0.15);
+}
+
+.syncStatus.error {
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
+  border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+.syncStatus.info {
+  background: rgba(59, 130, 246, 0.08);
+  color: #1e40af;
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+@media (max-width: 768px) {
+  .syncSection {
+    margin-top: var(--spacing-lg);
+  }
+
+  .syncCard {
+    padding: var(--spacing-xl);
+    border-radius: 16px;
+  }
+
+  .syncHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .syncHeader h3 {
+    font-size: 1.5rem;
+  }
+
+  .syncHeader .material-icons {
+    font-size: 2rem;
+  }
+
+  .syncButton {
+    padding: 14px 24px;
+    font-size: 0.9375rem;
+  }
+
+  .syncStatus {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.875rem;
+  }
+}
+

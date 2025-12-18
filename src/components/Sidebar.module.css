@@ -1,0 +1,316 @@
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 240px;
+  height: 100vh;
+  background: var(--bg-main);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  z-index: 90;
+  box-shadow: 2px 0 8px rgba(157, 157, 189, 0.08);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Brand Section */
+.brandSection {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(135deg, rgba(237, 237, 244, 0.3) 0%, transparent 100%);
+}
+
+.navBrand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.navBrand:hover {
+  opacity: 0.9;
+}
+
+.navBrand:hover .logoContainer {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(157, 157, 189, 0.3);
+}
+
+.logoContainer {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 6px rgba(157, 157, 189, 0.2);
+  transition: all 0.2s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.navBrand:hover .logoContainer {
+  background: var(--primary-dark);
+  box-shadow: 0 3px 10px rgba(157, 157, 189, 0.3);
+}
+
+.logoContainer .material-icons {
+  font-size: 24px;
+  color: white;
+  position: relative;
+  z-index: 1;
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  justify-content: center;
+  min-width: 0;
+}
+
+.brandTitle {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0;
+  background: linear-gradient(135deg, var(--text-dark) 0%, var(--primary-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+.brandSubtitle {
+  font-size: 0.625rem;
+  color: var(--text-medium);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.85;
+}
+
+.mobileCloseButton {
+  display: none;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--text-medium);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  margin-left: auto;
+  padding: 0;
+}
+
+.mobileCloseButton:hover {
+  background: var(--bg-light);
+  color: var(--primary);
+}
+
+.mobileCloseButton .material-icons {
+  font-size: 20px;
+}
+
+.sidebarNav {
+  flex: 1;
+  padding: var(--spacing-sm) 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.navList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.navItem {
+  margin: 0;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--text-dark);
+  text-decoration: none;
+  transition: var(--transition);
+  border-left: 3px solid transparent;
+  font-size: 0.875rem;
+}
+
+.navLink:hover {
+  background-color: var(--bg-light);
+  color: var(--primary);
+}
+
+.navLink.active {
+  background-color: var(--bg-light);
+  color: var(--primary);
+  border-left-color: var(--primary);
+  font-weight: 500;
+}
+
+.navLink .material-icons {
+  font-size: 1.25rem;
+  width: 20px;
+  text-align: center;
+}
+
+.navText {
+  font-size: 0.875rem;
+}
+
+/* User Section */
+.userSection {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-light);
+  margin-top: auto;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-xs);
+  border-radius: var(--radius);
+}
+
+.avatarContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.navAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 2px solid var(--primary-lighter);
+  box-shadow: 0 1px 4px rgba(157, 157, 189, 0.15);
+  transition: var(--transition);
+}
+
+.statusIndicator {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 10px;
+  height: 10px;
+  background-color: var(--success);
+  border: 2px solid var(--bg-main);
+  border-radius: var(--radius-full);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.userName {
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userEmail {
+  font-size: 0.6875rem;
+  color: var(--text-medium);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.signOutButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  background-color: transparent;
+  color: var(--text-medium);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.signOutButton:hover:not(:disabled) {
+  background-color: var(--bg-main);
+  color: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 1px 4px rgba(157, 157, 189, 0.15);
+}
+
+.signOutButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.signOutButton .material-icons {
+  font-size: 18px;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  .brandSection {
+    padding: var(--spacing-md);
+  }
+
+  .brandTitle {
+    font-size: 1.125rem;
+  }
+
+  .brandSubtitle {
+    font-size: 0.625rem;
+  }
+
+  .userDetails {
+    display: none;
+  }
+
+  .navLink {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .mobileCloseButton {
+    display: flex;
+  }
+}
+

@@ -1,0 +1,22 @@
+/* Layout Styles */
+.main-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding: var(--spacing-xl);
+  margin-left: 240px;
+  transition: margin-left 0.3s ease;
+  background: var(--bg-light);
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: var(--spacing-md);
+  }
+}
+

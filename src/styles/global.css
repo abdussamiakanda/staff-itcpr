@@ -1,0 +1,264 @@
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Main Theme Colors */
+  --primary: rgb(157, 157, 189);
+  --primary-dark: rgb(137, 137, 169);
+  --primary-light: rgb(177, 177, 209);
+  --primary-lighter: rgb(237, 237, 244);
+  --primary-color: rgb(157, 157, 189);
+  --primary-color-rgb: 157, 157, 189;
+  
+  /* Text Colors */
+  --text-dark: rgb(51, 51, 68);
+  --text-medium: rgb(107, 107, 142);
+  --text-light: rgb(157, 157, 189);
+  --text-primary: rgb(51, 51, 68);
+  --text-secondary: rgb(107, 107, 142);
+  
+  /* Background Colors */
+  --bg-main: #ffffff;
+  --bg-light: #f8f8fb;
+  --bg-overlay: rgba(157, 157, 189, 0.1);
+  --bg-color: #f8f8fb;
+  --card-bg: #ffffff;
+  
+  /* Border and Shadow */
+  --border-color: rgba(157, 157, 189, 0.25);
+  --shadow-color: rgba(157, 157, 189, 0.1);
+  --shadow-hover: rgba(157, 157, 189, 0.15);
+  
+  /* Status Colors */
+  --success: rgb(102, 187, 106);
+  --success-lighter: rgba(102, 187, 106, 0.1);
+  --warning: rgb(255, 193, 7);
+  --warning-lighter: rgba(255, 193, 7, 0.1);
+  --error: rgb(244, 67, 54);
+  --error-lighter: rgba(244, 67, 54, 0.1);
+  
+  /* Link Colors */
+  --anchor-color: rgb(140, 140, 254);
+  
+  /* Legacy Gray Support (for compatibility) */
+  --gray-50: #f8f8fb;
+  --gray-100: #f3f4f6;
+  --gray-200: rgba(157, 157, 189, 0.25);
+  --gray-300: rgba(157, 157, 189, 0.4);
+  --gray-400: rgb(157, 157, 189);
+  --gray-500: rgb(107, 107, 142);
+  --gray-600: rgb(107, 107, 142);
+  --gray-700: rgb(51, 51, 68);
+  --gray-800: rgb(51, 51, 68);
+  --gray-900: rgb(51, 51, 68);
+  
+  /* Secondary (for compatibility) */
+  --secondary: rgb(107, 107, 142);
+  --info: rgb(157, 157, 189);
+  
+  /* Spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --font-mono: 'Courier New', Courier, monospace;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 var(--shadow-color);
+  --shadow: 0 2px 8px var(--shadow-color);
+  --shadow-md: 0 4px 6px -1px var(--shadow-hover), 0 2px 4px -2px var(--shadow-color);
+  --shadow-lg: 0 10px 15px -3px var(--shadow-hover), 0 4px 6px -4px var(--shadow-color);
+  --shadow-xl: 0 20px 25px -5px var(--shadow-hover), 0 8px 10px -6px var(--shadow-color);
+  
+  /* Border Radius */
+  --radius-sm: 0.25rem;
+  --radius: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition: all 0.2s ease-in-out;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-dark);
+  background-color: var(--bg-light);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-dark);
+}
+
+h1 { font-size: 2.25rem; }
+h2 { font-size: 1.875rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+h5 { font-size: 1.125rem; }
+h6 { font-size: 1rem; }
+
+a {
+  color: var(--anchor-color);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+a:hover {
+  color: var(--primary);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: var(--transition);
+}
+
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  outline: none;
+  transition: var(--transition);
+}
+
+/* Utility Classes */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl);
+  color: var(--text-medium);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl);
+  text-align: center;
+  color: var(--text-medium);
+}
+
+.empty-state .material-icons {
+  font-size: 4rem;
+  margin-bottom: var(--spacing-md);
+  opacity: 0.5;
+}
+
+.empty-state p {
+  font-size: 1.125rem;
+}
+
+/* Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--radius);
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  border: 1px solid var(--primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-outline:hover {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.btn-sm {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: 0.8125rem;
+}
+
+/* Material Icons */
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-overlay);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(157, 157, 189, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(157, 157, 189, 0.4);
+}
+
+/* Select Styling */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%236B7280' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
