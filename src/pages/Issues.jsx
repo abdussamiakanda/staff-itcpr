@@ -94,25 +94,26 @@ const Issues = () => {
     }
   };
 
-  const notifyAdmins = async (subject, message) => {
+  const notifyStaff = async (subject, message, excludeUserId = null) => {
     try {
-      // Get all admin users
+      // Get all staff users
       const usersRef = collection(db, 'users');
       const usersSnapshot = await getDocs(usersRef);
-      const admins = usersSnapshot.docs
-        .map(doc => doc.data())
-        .filter(u => u.type === 'admin' && u.pemail);
+      const staffUsers = usersSnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(u => u.position === 'staff' && u.email && (!excludeUserId || u.id !== excludeUserId));
 
-      // Send email to each admin
-      for (const admin of admins) {
+      // Send email to each staff member
+      for (const staff of staffUsers) {
         try {
-          await sendEmail(admin.pemail, subject, getEmailTemplate(admin.name, message));
+          const staffName = staff.name || staff.displayName || 'User';
+          await sendEmail(staff.email, subject, getEmailTemplate(staffName, message));
         } catch (error) {
-          console.error(`Error sending email to ${admin.pemail}:`, error);
+          console.error(`Error sending email to ${staff.email}:`, error);
         }
       }
     } catch (error) {
-      console.error('Error notifying admins:', error);
+      console.error('Error notifying staff:', error);
     }
   };
 
@@ -123,17 +124,38 @@ const Issues = () => {
         ...formData,
         createdAt: serverTimestamp(),
         userId: user.uid,
-        userName: user.displayName || user.email || 'Unknown'
+        userName: userData?.name || userData?.displayName || user?.email || 'Unknown'
       };
 
       if (formData.type === 'event') {
         issueData.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       }
 
-      await addDoc(collection(db, 'issues'), issueData);
-      await notifyAdmins(
-        'A New Issue was Created in ITCPR Staff Portal',
-        `<b>${issueData.userName}</b> created a new issue.<br>Title: ${formData.title}`
+      const docRef = await addDoc(collection(db, 'issues'), issueData);
+      const issueUrl = `${window.location.origin}/issues`;
+      const issueType = formData.type === 'event' ? 'Event' : 'Issue';
+      const issueStatus = formData.type === 'event' ? 'Scheduled' : 'Pending';
+      
+      const message = `
+        <p><b>${issueData.userName}</b> created a new ${issueType.toLowerCase()} in the ITCPR Staff Portal.</p>
+        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+          <p><b>Title:</b> ${formData.title}</p>
+          <p><b>Type:</b> ${issueType}</p>
+          <p><b>Status:</b> ${issueStatus}</p>
+          ${formData.description ? `<p><b>Description:</b><br>${formData.description.replace(/\n/g, '<br>')}</p>` : ''}
+          ${formData.date ? `<p><b>Date:</b> ${formatEventDate(formData.date, formData.time, formData.timezone)}</p>` : ''}
+        </div>
+        <p style="margin-top: 20px;">
+          <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            View All Issues
+          </a>
+        </p>
+      `;
+      
+      await notifyStaff(
+        `A New ${issueType} was Created in ITCPR Staff Portal`,
+        message,
+        user?.uid
       );
 
       setShowAddModal(false);
@@ -160,9 +182,34 @@ const Issues = () => {
       }
 
       await updateDoc(doc(db, 'issues', id), issueData);
-      await notifyAdmins(
-        'An Issue was Edited in ITCPR Staff Portal',
-        `<b>${user.displayName || user.email || 'Unknown'}</b> edited an issue.<br>Title: ${formData.title}`
+      
+      // Get the issue to include more details
+      const issueDoc = await getDoc(doc(db, 'issues', id));
+      const issue = issueDoc.data();
+      const issueUrl = `${window.location.origin}/issues`;
+      const issueType = formData.type === 'event' ? 'Event' : 'Issue';
+      const issueStatus = issue.resolvedAt ? 'Resolved' : (formData.type === 'event' ? 'Scheduled' : 'Pending');
+      
+      const message = `
+        <p><b>${userData?.name || userData?.displayName || user?.email || 'Unknown'}</b> edited a ${issueType.toLowerCase()} in the ITCPR Staff Portal.</p>
+        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+          <p><b>Title:</b> ${formData.title}</p>
+          <p><b>Type:</b> ${issueType}</p>
+          <p><b>Status:</b> ${issueStatus}</p>
+          ${formData.description ? `<p><b>Description:</b><br>${formData.description.replace(/\n/g, '<br>')}</p>` : ''}
+          ${formData.date ? `<p><b>Date:</b> ${formatEventDate(formData.date, formData.time, formData.timezone)}</p>` : ''}
+        </div>
+        <p style="margin-top: 20px;">
+          <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            View All Issues
+          </a>
+        </p>
+      `;
+      
+      await notifyStaff(
+        `An ${issueType} was Edited in ITCPR Staff Portal`,
+        message,
+        user?.uid
       );
 
       setSelectedIssue(null);
@@ -179,10 +226,30 @@ const Issues = () => {
   const handleDeleteIssue = async (id) => {
     setDeletingIssue(true);
     try {
+      // Get issue details before deleting
+      const issueDoc = await getDoc(doc(db, 'issues', id));
+      const issue = issueDoc.data();
+      const issueType = issue?.type === 'event' ? 'Event' : 'Issue';
+      
       await deleteDoc(doc(db, 'issues', id));
-      await notifyAdmins(
-        'An Issue was Deleted in ITCPR Staff Portal',
-        `<b>${user.displayName || user.email || 'Unknown'}</b> deleted an issue.`
+      
+      const issueUrl = `${window.location.origin}/issues`;
+      const message = `
+        <p><b>${userData?.name || userData?.displayName || user?.email || 'Unknown'}</b> deleted a ${issueType.toLowerCase()} from the ITCPR Staff Portal.</p>
+        ${issue?.title ? `<div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+          <p><b>Deleted ${issueType}:</b> ${issue.title}</p>
+        </div>` : ''}
+        <p style="margin-top: 20px;">
+          <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            View All Issues
+          </a>
+        </p>
+      `;
+      
+      await notifyStaff(
+        `An ${issueType} was Deleted in ITCPR Staff Portal`,
+        message,
+        user?.uid
       );
 
       setShowDeleteModal(false);
@@ -200,10 +267,31 @@ const Issues = () => {
   const handleResolveIssue = async (id) => {
     setResolvingIssue(true);
     try {
+      // Get issue details before updating
+      const issueDoc = await getDoc(doc(db, 'issues', id));
+      const issue = issueDoc.data();
+      
       await updateDoc(doc(db, 'issues', id), { resolvedAt: serverTimestamp() });
-      await notifyAdmins(
+      
+      const issueUrl = `${window.location.origin}/issues`;
+      const message = `
+        <p><b>${userData?.name || userData?.displayName || user?.email || 'Unknown'}</b> resolved an issue in the ITCPR Staff Portal.</p>
+        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+          <p><b>Issue:</b> ${issue?.title || 'N/A'}</p>
+          <p><b>Status:</b> <span style="color: #4CAF50; font-weight: bold;">Resolved</span></p>
+          ${issue?.description ? `<p><b>Description:</b><br>${issue.description.replace(/\n/g, '<br>')}</p>` : ''}
+        </div>
+        <p style="margin-top: 20px;">
+          <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            View All Issues
+          </a>
+        </p>
+      `;
+      
+      await notifyStaff(
         'An Issue was Resolved in ITCPR Staff Portal',
-        `<b>${user.displayName || user.email || 'Unknown'}</b> resolved an issue.`
+        message,
+        user?.uid
       );
       
       await loadIssues();
@@ -228,10 +316,31 @@ const Issues = () => {
   const handleUnresolveIssue = async (id) => {
     setUnresolvingIssue(true);
     try {
+      // Get issue details before updating
+      const issueDoc = await getDoc(doc(db, 'issues', id));
+      const issue = issueDoc.data();
+      
       await updateDoc(doc(db, 'issues', id), { resolvedAt: null });
-      await notifyAdmins(
+      
+      const issueUrl = `${window.location.origin}/issues`;
+      const message = `
+        <p><b>${userData?.name || userData?.displayName || user?.email || 'Unknown'}</b> marked an issue as unresolved in the ITCPR Staff Portal.</p>
+        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+          <p><b>Issue:</b> ${issue?.title || 'N/A'}</p>
+          <p><b>Status:</b> <span style="color: #ff9800; font-weight: bold;">Pending</span></p>
+          ${issue?.description ? `<p><b>Description:</b><br>${issue.description.replace(/\n/g, '<br>')}</p>` : ''}
+        </div>
+        <p style="margin-top: 20px;">
+          <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            View All Issues
+          </a>
+        </p>
+      `;
+      
+      await notifyStaff(
         'An Issue was Unresolved in ITCPR Staff Portal',
-        `<b>${user.displayName || user.email || 'Unknown'}</b> marked an issue as unresolved.`
+        message,
+        user?.uid
       );
       
       await loadIssues();
@@ -258,13 +367,32 @@ const Issues = () => {
       await addDoc(collection(db, 'issues', issueId, 'comments'), {
         comment,
         userId: user.uid,
-        userName: user.displayName || user.email || 'Unknown',
+        userName: userData?.name || userData?.displayName || user?.email || 'Unknown',
         createdAt: serverTimestamp()
       });
 
-      await notifyAdmins(
+      // Get issue details for the email
+      const issueDoc = await getDoc(doc(db, 'issues', issueId));
+      const issue = issueDoc.data();
+      const issueUrl = `${window.location.origin}/issues`;
+      
+      const message = `
+        <p><b>${userData?.name || userData?.displayName || user?.email || 'Unknown'}</b> added a comment to an issue in the ITCPR Staff Portal.</p>
+        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+          <p><b>Issue:</b> ${issue?.title || 'N/A'}</p>
+          <p><b>Comment:</b><br>${comment.replace(/\n/g, '<br>')}</p>
+        </div>
+        <p style="margin-top: 20px;">
+          <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            View Issue
+          </a>
+        </p>
+      `;
+
+      await notifyStaff(
         'A New Comment was Created in ITCPR Staff Portal',
-        `<b>${user.displayName || user.email || 'Unknown'}</b> added a comment.<br>Comment: ${comment}`
+        message,
+        user?.uid
       );
 
       setShowCommentModal(false);
@@ -286,9 +414,28 @@ const Issues = () => {
         createdAt: serverTimestamp()
       });
 
-      await notifyAdmins(
+      // Get issue details for the email
+      const issueDoc = await getDoc(doc(db, 'issues', issueId));
+      const issue = issueDoc.data();
+      const issueUrl = `${window.location.origin}/issues`;
+      
+      const message = `
+        <p><b>${userData?.name || userData?.displayName || user?.email || 'Unknown'}</b> edited a comment on an issue in the ITCPR Staff Portal.</p>
+        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+          <p><b>Issue:</b> ${issue?.title || 'N/A'}</p>
+          <p><b>Updated Comment:</b><br>${comment.replace(/\n/g, '<br>')}</p>
+        </div>
+        <p style="margin-top: 20px;">
+          <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            View Issue
+          </a>
+        </p>
+      `;
+
+      await notifyStaff(
         'A Comment was Edited in ITCPR Staff Portal',
-        `<b>${user.displayName || user.email || 'Unknown'}</b> edited a comment.<br>Comment: ${comment}`
+        message,
+        user?.uid
       );
 
       setShowCommentModal(false);
@@ -306,10 +453,29 @@ const Issues = () => {
 
   const handleDeleteComment = async (issueId, commentId) => {
     try {
+      // Get issue details before deleting comment
+      const issueDoc = await getDoc(doc(db, 'issues', issueId));
+      const issue = issueDoc.data();
+      
       await deleteDoc(doc(db, 'issues', issueId, 'comments', commentId));
-      await notifyAdmins(
+      
+      const issueUrl = `${window.location.origin}/issues`;
+      const message = `
+        <p><b>${userData?.name || userData?.displayName || user?.email || 'Unknown'}</b> deleted a comment from an issue in the ITCPR Staff Portal.</p>
+        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+          <p><b>Issue:</b> ${issue?.title || 'N/A'}</p>
+        </div>
+        <p style="margin-top: 20px;">
+          <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            View Issue
+          </a>
+        </p>
+      `;
+      
+      await notifyStaff(
         'A Comment was Deleted in ITCPR Staff Portal',
-        `<b>${user.displayName || user.email || 'Unknown'}</b> deleted a comment.`
+        message,
+        user?.uid
       );
 
       // Reload comments for the selected issue
