@@ -20,6 +20,10 @@ const Users = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingTerminateUserId, setPendingTerminateUserId] = useState(null);
+  const [terminatingUserId, setTerminatingUserId] = useState(null);
+  const [changingStatusUserId, setChangingStatusUserId] = useState(null);
+  const [addingUser, setAddingUser] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -31,8 +35,12 @@ const Users = () => {
     loadUsers();
   }, []);
 
-  const loadUsers = async () => {
-    setLoading(true);
+  const loadUsers = async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     try {
       // Load active users
       const usersRef = collection(db, 'users');
@@ -79,6 +87,7 @@ const Users = () => {
       console.error('Error loading users:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -215,6 +224,7 @@ const Users = () => {
   };
 
   const executeTerminateUser = async (userId) => {
+    setTerminatingUserId(userId);
     try {
       const userRef = doc(db, 'users', userId);
       const userSnap = await getDoc(userRef);
@@ -277,10 +287,13 @@ const Users = () => {
     } catch (error) {
       console.error('Error terminating user:', error);
       toast.error('Error terminating user. Please try again.');
+    } finally {
+      setTerminatingUserId(null);
     }
   };
 
   const handleChangeStatus = async (userId) => {
+    setChangingStatusUserId(userId);
     try {
       const userRef = doc(db, 'users', userId);
       const userSnap = await getDoc(userRef);
@@ -295,12 +308,17 @@ const Users = () => {
       await updateDoc(userRef, { status: newStatus });
       await loadUsers();
       setSelectedUser(null);
+      toast.success(`User status changed to ${newStatus}`);
     } catch (error) {
       console.error('Error changing user status:', error);
+      toast.error('Error changing user status. Please try again.');
+    } finally {
+      setChangingStatusUserId(null);
     }
   };
 
   const handleAddUser = async (userData) => {
+    setAddingUser(true);
     try {
       const email = await generateEmail(userData.name);
 
@@ -377,6 +395,8 @@ const Users = () => {
     } catch (error) {
       console.error('Error adding user:', error);
       toast.error('Error adding user. Please try again.');
+    } finally {
+      setAddingUser(false);
     }
   };
 
@@ -439,9 +459,13 @@ const Users = () => {
               <span className="material-icons">person_add</span>
               Add User
             </button>
-            <button className={styles.btnRefresh} onClick={loadUsers}>
-              <i className="fas fa-sync-alt"></i>
-              Refresh
+            <button 
+              className={styles.btnRefresh} 
+              onClick={() => loadUsers(true)}
+              disabled={refreshing}
+            >
+              <i className={`fas fa-sync-alt ${refreshing ? styles.spinning : ''}`}></i>
+              {refreshing ? 'Refreshing...' : 'Refresh'}
             </button>
           </div>
         </div>
@@ -582,6 +606,8 @@ const Users = () => {
           onChangeStatus={handleChangeStatus}
           capitalize={capitalize}
           formatDate={formatDate}
+          terminating={terminatingUserId === selectedUser.uid}
+          changingStatus={changingStatusUserId === selectedUser.uid}
         />
       )}
 
@@ -589,6 +615,7 @@ const Users = () => {
         <AddUserModal
           onClose={() => setShowAddModal(false)}
           onAdd={handleAddUser}
+          adding={addingUser}
         />
       )}
 

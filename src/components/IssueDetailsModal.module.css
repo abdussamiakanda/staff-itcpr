@@ -24,6 +24,11 @@
   }
 }
 
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .modalContent {
   background: var(--bg-main);
   border-radius: 20px;
@@ -225,6 +230,24 @@
 .btnDelete:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+.btnResolve:disabled,
+.btnUnresolve:disabled,
+.btnEdit:disabled,
+.btnDelete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+}
+
+.btnResolve:disabled:hover,
+.btnUnresolve:disabled:hover,
+.btnEdit:disabled:hover,
+.btnDelete:disabled:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .modalBody {
@@ -470,6 +493,21 @@
 .btnDeleteComment:hover {
   background: #ef4444;
   color: white;
+}
+
+.btnEditComment:disabled,
+.btnDeleteComment:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+}
+
+.btnEditComment:disabled:hover,
+.btnDeleteComment:disabled:hover {
+  transform: none;
+  background: inherit;
+  color: inherit;
 }
 
 @media (max-width: 768px) {

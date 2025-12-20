@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './UserDetailsModal.module.css';
 
-const UserDetailsModal = ({ user, onClose, onTerminate, onChangeStatus, capitalize, formatDate }) => {
+const UserDetailsModal = ({ user, onClose, onTerminate, onChangeStatus, capitalize, formatDate, terminating, changingStatus }) => {
   const getInitials = (name) => {
     if (!name) return '?';
     const parts = name.trim().split(/\s+/);
@@ -91,18 +91,42 @@ const UserDetailsModal = ({ user, onClose, onTerminate, onChangeStatus, capitali
               <button 
                 className={styles.btnDanger}
                 onClick={() => onTerminate(user.uid)}
+                disabled={terminating || changingStatus}
               >
-                <span className="material-icons">delete</span>
-                Terminate
+                {terminating ? (
+                  <>
+                    <span className="material-icons" style={{ animation: 'spin 1s linear infinite' }}>refresh</span>
+                    Terminating...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-icons">delete</span>
+                    Terminate
+                  </>
+                )}
               </button>
               <button 
                 className={styles.btnWarning}
                 onClick={() => onChangeStatus(user.uid)}
+                disabled={terminating || changingStatus}
               >
-                <span className="material-icons">flag</span>
-                {user.status === 'active' ? 'Flag User' : 'Reinstate User'}
+                {changingStatus ? (
+                  <>
+                    <span className="material-icons" style={{ animation: 'spin 1s linear infinite' }}>refresh</span>
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-icons">flag</span>
+                    {user.status === 'active' ? 'Flag User' : 'Reinstate User'}
+                  </>
+                )}
               </button>
-              <button className={styles.btnOutline} onClick={onClose}>
+              <button 
+                className={styles.btnOutline} 
+                onClick={onClose}
+                disabled={terminating || changingStatus}
+              >
                 Close
               </button>
             </div>

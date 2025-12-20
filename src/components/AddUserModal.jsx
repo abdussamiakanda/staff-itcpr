@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styles from './AddUserModal.module.css';
 
-const AddUserModal = ({ onClose, onAdd }) => {
+const AddUserModal = ({ onClose, onAdd, adding }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -127,11 +127,29 @@ const AddUserModal = ({ onClose, onAdd }) => {
             </div>
 
             <div className={styles.formActions}>
-              <button type="submit" className={styles.btnPrimary}>
-                <span className="material-icons">person_add</span>
-                Add User
+              <button 
+                type="submit" 
+                className={styles.btnPrimary}
+                disabled={adding}
+              >
+                {adding ? (
+                  <>
+                    <span className="material-icons" style={{ animation: 'spin 1s linear infinite' }}>refresh</span>
+                    Adding User...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-icons">person_add</span>
+                    Add User
+                  </>
+                )}
               </button>
-              <button type="button" className={styles.btnSecondary} onClick={onClose}>
+              <button 
+                type="button" 
+                className={styles.btnSecondary} 
+                onClick={onClose}
+                disabled={adding}
+              >
                 Cancel
               </button>
             </div>

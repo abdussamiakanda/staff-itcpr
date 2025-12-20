@@ -57,6 +57,11 @@
   }
 }
 
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .modalHeader {
   display: flex;
   align-items: center;
@@ -173,6 +178,20 @@
 .btnDanger .material-icons,
 .btnOutline .material-icons {
   font-size: 20px;
+}
+
+.btnDanger:disabled,
+.btnOutline:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+}
+
+.btnDanger:disabled:hover,
+.btnOutline:disabled:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 @media (max-width: 768px) {

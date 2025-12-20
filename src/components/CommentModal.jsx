@@ -3,6 +3,7 @@ import styles from './CommentModal.module.css';
 
 const CommentModal = ({ issueId, comment, onClose, onSave }) => {
   const [commentText, setCommentText] = useState('');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (comment) {
@@ -10,12 +11,17 @@ const CommentModal = ({ issueId, comment, onClose, onSave }) => {
     }
   }, [comment]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!commentText.trim()) {
+    if (!commentText.trim() || saving) {
       return;
     }
-    onSave(commentText.trim());
+    setSaving(true);
+    try {
+      await onSave(commentText.trim());
+    } finally {
+      setSaving(false);
+    }
   };
 
   const isEdit = !!comment;
@@ -46,10 +52,29 @@ const CommentModal = ({ issueId, comment, onClose, onSave }) => {
         </div>
 
         <div className={styles.modalFooter}>
-          <button type="submit" form="commentForm" className={styles.btnPrimary}>
-            {isEdit ? 'Update' : 'Add'} Comment
+          <button 
+            type="submit" 
+            form="commentForm" 
+            className={styles.btnPrimary}
+            disabled={saving}
+          >
+            {saving ? (
+              <>
+                <span className="material-icons" style={{ animation: 'spin 1s linear infinite' }}>refresh</span>
+                {isEdit ? 'Updating...' : 'Adding...'}
+              </>
+            ) : (
+              <>
+                {isEdit ? 'Update' : 'Add'} Comment
+              </>
+            )}
           </button>
-          <button type="button" className={styles.btnOutline} onClick={onClose}>
+          <button 
+            type="button" 
+            className={styles.btnOutline} 
+            onClick={onClose}
+            disabled={saving}
+          >
             Cancel
           </button>
         </div>

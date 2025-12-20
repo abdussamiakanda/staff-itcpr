@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp, getDoc } from 'firebase/firestore';
+import toast from 'react-hot-toast';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp, getDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { useAuth } from '../hooks/useAuth';
 import { sendEmail, getEmailTemplate } from '../utils/email';
@@ -18,6 +19,11 @@ const Issues = () => {
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [editingComment, setEditingComment] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [addingIssue, setAddingIssue] = useState(false);
+  const [editingIssue, setEditingIssue] = useState(false);
+  const [deletingIssue, setDeletingIssue] = useState(false);
+  const [resolvingIssue, setResolvingIssue] = useState(false);
+  const [unresolvingIssue, setUnresolvingIssue] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterType, setFilterType] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -111,6 +117,7 @@ const Issues = () => {
   };
 
   const handleAddIssue = async (formData) => {
+    setAddingIssue(true);
     try {
       const issueData = {
         ...formData,
@@ -131,12 +138,17 @@ const Issues = () => {
 
       setShowAddModal(false);
       await loadIssues();
+      toast.success('Issue added successfully');
     } catch (error) {
       console.error('Error adding issue:', error);
+      toast.error('Error adding issue. Please try again.');
+    } finally {
+      setAddingIssue(false);
     }
   };
 
   const handleEditIssue = async (id, formData) => {
+    setEditingIssue(true);
     try {
       const issueData = {
         ...formData,
@@ -155,12 +167,17 @@ const Issues = () => {
 
       setSelectedIssue(null);
       await loadIssues();
+      toast.success('Issue updated successfully');
     } catch (error) {
       console.error('Error editing issue:', error);
+      toast.error('Error editing issue. Please try again.');
+    } finally {
+      setEditingIssue(false);
     }
   };
 
   const handleDeleteIssue = async (id) => {
+    setDeletingIssue(true);
     try {
       await deleteDoc(doc(db, 'issues', id));
       await notifyAdmins(
@@ -171,38 +188,68 @@ const Issues = () => {
       setShowDeleteModal(false);
       setSelectedIssue(null);
       await loadIssues();
+      toast.success('Issue deleted successfully');
     } catch (error) {
       console.error('Error deleting issue:', error);
+      toast.error('Error deleting issue. Please try again.');
+    } finally {
+      setDeletingIssue(false);
     }
   };
 
   const handleResolveIssue = async (id) => {
+    setResolvingIssue(true);
     try {
       await updateDoc(doc(db, 'issues', id), { resolvedAt: serverTimestamp() });
       await notifyAdmins(
         'An Issue was Resolved in ITCPR Staff Portal',
         `<b>${user.displayName || user.email || 'Unknown'}</b> resolved an issue.`
       );
-
-      setSelectedIssue(null);
+      
       await loadIssues();
+      
+      // Update the selected issue state after loading is complete
+      if (selectedIssue && selectedIssue.id === id) {
+        setSelectedIssue(prev => ({
+          ...prev,
+          resolvedAt: Timestamp.now() // Use Firestore Timestamp
+        }));
+      }
+      
+      toast.success('Issue resolved successfully');
     } catch (error) {
       console.error('Error resolving issue:', error);
+      toast.error('Error resolving issue. Please try again.');
+    } finally {
+      setResolvingIssue(false);
     }
   };
 
   const handleUnresolveIssue = async (id) => {
+    setUnresolvingIssue(true);
     try {
       await updateDoc(doc(db, 'issues', id), { resolvedAt: null });
       await notifyAdmins(
         'An Issue was Unresolved in ITCPR Staff Portal',
         `<b>${user.displayName || user.email || 'Unknown'}</b> marked an issue as unresolved.`
       );
-
-      setSelectedIssue(null);
+      
       await loadIssues();
+      
+      // Update the selected issue state after loading is complete
+      if (selectedIssue && selectedIssue.id === id) {
+        setSelectedIssue(prev => ({
+          ...prev,
+          resolvedAt: null
+        }));
+      }
+      
+      toast.success('Issue marked as unresolved');
     } catch (error) {
       console.error('Error unresolving issue:', error);
+      toast.error('Error unresolving issue. Please try again.');
+    } finally {
+      setUnresolvingIssue(false);
     }
   };
 
@@ -221,11 +268,14 @@ const Issues = () => {
       );
 
       setShowCommentModal(false);
+      // Reload comments for the selected issue
       if (selectedIssue && selectedIssue.id === issueId) {
         await loadComments(issueId);
       }
+      toast.success('Comment added successfully');
     } catch (error) {
       console.error('Error adding comment:', error);
+      toast.error('Error adding comment. Please try again.');
     }
   };
 
@@ -243,11 +293,14 @@ const Issues = () => {
 
       setShowCommentModal(false);
       setEditingComment(null);
+      // Reload comments for the selected issue
       if (selectedIssue && selectedIssue.id === issueId) {
         await loadComments(issueId);
       }
+      toast.success('Comment updated successfully');
     } catch (error) {
       console.error('Error editing comment:', error);
+      toast.error('Error editing comment. Please try again.');
     }
   };
 
@@ -259,11 +312,13 @@ const Issues = () => {
         `<b>${user.displayName || user.email || 'Unknown'}</b> deleted a comment.`
       );
 
+      // Reload comments for the selected issue
       if (selectedIssue && selectedIssue.id === issueId) {
         await loadComments(issueId);
       }
     } catch (error) {
       console.error('Error deleting comment:', error);
+      toast.error('Error deleting comment. Please try again.');
     }
   };
 
@@ -491,6 +546,7 @@ const Issues = () => {
         <IssueModal
           onClose={() => setShowAddModal(false)}
           onSave={handleAddIssue}
+          saving={addingIssue}
         />
       )}
 
@@ -512,6 +568,8 @@ const Issues = () => {
           formatEventDate={formatEventDate}
           isAdmin={isAdmin}
           currentUserId={user?.uid}
+          resolving={resolvingIssue}
+          unresolving={unresolvingIssue}
         />
       )}
 
@@ -520,6 +578,7 @@ const Issues = () => {
           issue={selectedIssue}
           onClose={() => setSelectedIssue(null)}
           onSave={(formData) => handleEditIssue(selectedIssue.id, formData)}
+          saving={editingIssue}
         />
       )}
 
@@ -545,6 +604,7 @@ const Issues = () => {
             setSelectedIssue(null);
           }}
           onConfirm={() => handleDeleteIssue(selectedIssue.id)}
+          deleting={deletingIssue}
         />
       )}
     </div>

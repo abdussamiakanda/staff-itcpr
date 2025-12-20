@@ -273,6 +273,22 @@
   font-size: 18px;
 }
 
+.btnDanger:disabled,
+.btnWarning:disabled,
+.btnOutline:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+}
+
+.btnDanger:disabled:hover,
+.btnWarning:disabled:hover,
+.btnOutline:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 @media (max-width: 768px) {
   .modalOverlay {
     padding: var(--spacing-md);

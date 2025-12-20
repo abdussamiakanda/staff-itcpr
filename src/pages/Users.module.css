@@ -91,6 +91,20 @@
   color: white;
 }
 
+.btnAddUser:disabled,
+.btnRefresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+}
+
+.btnAddUser:disabled:hover,
+.btnRefresh:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 .overviewContainer {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -332,6 +346,17 @@
   transform: translateY(-1px);
 }
 
+.btnView:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+}
+
+.btnView:disabled:hover {
+  transform: none;
+}
+
 .loadingState {
   display: flex;
   flex-direction: column;
@@ -355,6 +380,10 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
 }
 
 .loadingState h3 {

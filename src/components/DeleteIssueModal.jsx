@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './DeleteIssueModal.module.css';
 
-const DeleteIssueModal = ({ onClose, onConfirm }) => {
+const DeleteIssueModal = ({ onClose, onConfirm, deleting }) => {
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -15,11 +15,28 @@ const DeleteIssueModal = ({ onClose, onConfirm }) => {
         </div>
 
         <div className={styles.modalFooter}>
-          <button className={styles.btnDanger} onClick={onConfirm}>
-            <span className="material-icons">delete</span>
-            Delete
+          <button 
+            className={styles.btnDanger} 
+            onClick={onConfirm}
+            disabled={deleting}
+          >
+            {deleting ? (
+              <>
+                <span className="material-icons" style={{ animation: 'spin 1s linear infinite' }}>refresh</span>
+                Deleting...
+              </>
+            ) : (
+              <>
+                <span className="material-icons">delete</span>
+                Delete
+              </>
+            )}
           </button>
-          <button className={styles.btnOutline} onClick={onClose}>
+          <button 
+            className={styles.btnOutline} 
+            onClick={onClose}
+            disabled={deleting}
+          >
             Cancel
           </button>
         </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './IssueModal.module.css';
 
-const IssueModal = ({ issue, onClose, onSave }) => {
+const IssueModal = ({ issue, onClose, onSave, saving }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -35,12 +35,12 @@ const IssueModal = ({ issue, onClose, onSave }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title || !formData.description) {
+    if (!formData.title || !formData.description || saving) {
       return;
     }
-    onSave(formData);
+    await onSave(formData);
   };
 
   const isEdit = issue && issue.isEdit;
@@ -127,10 +127,29 @@ const IssueModal = ({ issue, onClose, onSave }) => {
         </div>
 
         <div className={styles.modalFooter}>
-          <button type="submit" form="issueForm" className={styles.btnPrimary}>
-            {isEdit ? 'Save Changes' : 'Add Issue/Event'}
+          <button 
+            type="submit" 
+            form="issueForm" 
+            className={styles.btnPrimary}
+            disabled={saving}
+          >
+            {saving ? (
+              <>
+                <span className="material-icons" style={{ animation: 'spin 1s linear infinite' }}>refresh</span>
+                {isEdit ? 'Saving...' : 'Adding...'}
+              </>
+            ) : (
+              <>
+                {isEdit ? 'Save Changes' : 'Add Issue/Event'}
+              </>
+            )}
           </button>
-          <button type="button" className={styles.btnOutline} onClick={onClose}>
+          <button 
+            type="button" 
+            className={styles.btnOutline} 
+            onClick={onClose}
+            disabled={saving}
+          >
             Cancel
           </button>
         </div>

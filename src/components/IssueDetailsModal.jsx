@@ -19,15 +19,25 @@ const IssueDetailsModal = ({
   formatDate,
   formatEventDate,
   isAdmin,
-  currentUserId
+  currentUserId,
+  resolving,
+  unresolving
 }) => {
   const [comments, setComments] = useState(issue.comments || []);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingCommentId, setPendingCommentId] = useState(null);
+  const [deletingCommentId, setDeletingCommentId] = useState(null);
 
   useEffect(() => {
     loadComments();
   }, [issue.id]);
+
+  // Reload comments when issue.comments changes (after adding/editing)
+  useEffect(() => {
+    if (issue.comments) {
+      setComments(issue.comments);
+    }
+  }, [issue.comments]);
 
   const loadComments = async () => {
     try {
@@ -55,6 +65,7 @@ const IssueDetailsModal = ({
   };
 
   const executeDeleteComment = async (commentId) => {
+    setDeletingCommentId(commentId);
     try {
       await onDeleteComment(issue.id, commentId);
       await loadComments();
@@ -62,6 +73,8 @@ const IssueDetailsModal = ({
     } catch (error) {
       console.error('Error deleting comment:', error);
       toast.error('Error deleting comment. Please try again.');
+    } finally {
+      setDeletingCommentId(null);
     }
   };
 
@@ -80,22 +93,56 @@ const IssueDetailsModal = ({
             {isAdmin && (
               <div className={styles.issueActions}>
                 {isIssue && !isResolved && (
-                  <button className={styles.btnResolve} onClick={() => onResolve(issue.id)}>
-                    <span className="material-icons">check_circle</span>
-                    Resolve
+                  <button 
+                    className={styles.btnResolve} 
+                    onClick={() => onResolve(issue.id)}
+                    disabled={resolving || unresolving}
+                  >
+                    {resolving ? (
+                      <>
+                        <span className="material-icons" style={{ animation: 'spin 1s linear infinite' }}>refresh</span>
+                        Resolving...
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-icons">check_circle</span>
+                        Resolve
+                      </>
+                    )}
                   </button>
                 )}
                 {isIssue && isResolved && (
-                  <button className={styles.btnUnresolve} onClick={() => onUnresolve(issue.id)}>
-                    <span className="material-icons">cancel</span>
-                    Unresolve
+                  <button 
+                    className={styles.btnUnresolve} 
+                    onClick={() => onUnresolve(issue.id)}
+                    disabled={resolving || unresolving}
+                  >
+                    {unresolving ? (
+                      <>
+                        <span className="material-icons" style={{ animation: 'spin 1s linear infinite' }}>refresh</span>
+                        Unresolving...
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-icons">cancel</span>
+                        Unresolve
+                      </>
+                    )}
                   </button>
                 )}
-                <button className={styles.btnEdit} onClick={() => onEdit(issue)}>
+                <button 
+                  className={styles.btnEdit} 
+                  onClick={() => onEdit(issue)}
+                  disabled={resolving || unresolving}
+                >
                   <span className="material-icons">edit</span>
                   Edit
                 </button>
-                <button className={styles.btnDelete} onClick={onDelete}>
+                <button 
+                  className={styles.btnDelete} 
+                  onClick={onDelete}
+                  disabled={resolving || unresolving}
+                >
                   <span className="material-icons">delete</span>
                   Delete
                 </button>
@@ -175,6 +222,7 @@ const IssueDetailsModal = ({
                         <button 
                           className={styles.btnEditComment}
                           onClick={() => onEditComment(comment)}
+                          disabled={deletingCommentId === comment.id}
                         >
                           <span className="material-icons">edit</span>
                           Edit
@@ -182,9 +230,19 @@ const IssueDetailsModal = ({
                         <button 
                           className={styles.btnDeleteComment}
                           onClick={() => handleDeleteComment(comment.id)}
+                          disabled={deletingCommentId === comment.id}
                         >
-                          <span className="material-icons">delete</span>
-                          Delete
+                          {deletingCommentId === comment.id ? (
+                            <>
+                              <span className="material-icons" style={{ animation: 'spin 1s linear infinite' }}>refresh</span>
+                              Deleting...
+                            </>
+                          ) : (
+                            <>
+                              <span className="material-icons">delete</span>
+                              Delete
+                            </>
+                          )}
                         </button>
                       </div>
                     )}
