@@ -190,7 +190,7 @@
 
 .newsletterGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   gap: var(--spacing-lg);
 }
 
@@ -290,7 +290,9 @@
 }
 
 .btnView,
-.btnEdit {
+.btnEdit,
+.btnDiscord,
+.btnDelete {
   padding: 8px 16px;
   border: none;
   border-radius: 8px;
@@ -324,6 +326,42 @@
   background: var(--primary);
   color: white;
   transform: translateY(-1px);
+}
+
+.btnDiscord {
+  background: transparent;
+  color: #5865F2;
+  border: 2px solid #5865F2;
+}
+
+.btnDiscord:hover {
+  background: #5865F2;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.btnDiscord:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btnDelete {
+  background: transparent;
+  color: #ef4444;
+  border: 2px solid #ef4444;
+}
+
+.btnDelete:hover {
+  background: #ef4444;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.btnDelete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .loadingState {
@@ -401,6 +439,10 @@
     align-items: flex-start;
   }
 
+  .sectionTitle h2 {
+    font-size: 1.75rem;
+  }
+
   .filtersContainer {
     flex-direction: column;
     padding: var(--spacing-md);
@@ -408,9 +450,56 @@
 
   .searchBox {
     width: 100%;
+    min-width: 100%;
   }
 
   .newsletterGrid {
     grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+
+  .newsletterCard {
+    padding: var(--spacing-md);
+  }
+
+  .newsletterFooter {
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+  }
+
+  .btnView,
+  .btnEdit,
+  .btnDiscord,
+  .btnDelete {
+    flex: 1;
+    min-width: calc(50% - 4px);
+    padding: 10px 12px;
+    font-size: 0.8125rem;
+  }
+
+  .btnView .material-icons,
+  .btnEdit .material-icons,
+  .btnDiscord .material-icons,
+  .btnDelete .material-icons {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sectionTitle h2 {
+    font-size: 1.5rem;
+  }
+
+  .newsletterHeader h4 {
+    font-size: 1.125rem;
+  }
+
+  .btnView,
+  .btnEdit,
+  .btnDiscord,
+  .btnDelete {
+    min-width: 100%;
+    font-size: 0.75rem;
+    padding: 8px 10px;
   }
 }

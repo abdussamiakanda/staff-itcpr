@@ -35,6 +35,13 @@ const NewsletterModal = ({ newsletter, onClose, onSave }) => {
       ...prev,
       [name]: value
     }));
+    
+    // Update preview when image URL is manually entered
+    if (name === 'image' && value) {
+      setPreviewImage(value);
+    } else if (name === 'image' && !value) {
+      setPreviewImage(null);
+    }
   };
 
   const handleImageUpload = async (e) => {
@@ -118,7 +125,7 @@ const NewsletterModal = ({ newsletter, onClose, onSave }) => {
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} style={{ maxWidth: '800px', width: '100%' }} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h3>{isEdit ? 'Edit' : 'Add'} Newsletter/Event</h3>
+          <h3>{isEdit ? 'Edit' : 'Add'} Newsletter</h3>
           <button className={styles.modalClose} onClick={onClose}>&times;</button>
         </div>
         <div className={styles.modalBody}>
@@ -209,17 +216,15 @@ const NewsletterModal = ({ newsletter, onClose, onSave }) => {
                     </button>
                   </div>
                 )}
-                {formData.image && (
-                  <input
-                    type="text"
-                    id="image"
-                    name="image"
-                    value={formData.image}
-                    onChange={handleChange}
-                    placeholder="Or enter image URL manually"
-                    className={styles.imageUrlInput}
-                  />
-                )}
+                <input
+                  type="text"
+                  id="image"
+                  name="image"
+                  value={formData.image}
+                  onChange={handleChange}
+                  placeholder="Or enter image URL manually"
+                  className={styles.imageUrlInput}
+                />
               </div>
             </div>
           </form>

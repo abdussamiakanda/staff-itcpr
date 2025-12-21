@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { supabaseClient, supabaseServiceClient } from '../config/supabase';
 import NewsletterModal from '../components/NewsletterModal';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { sendMessageToChannel } from '../utils/discord';
 import styles from './Newsletter.module.css';
 
 const Newsletter = () => {
@@ -10,6 +13,10 @@ const Newsletter = () => {
   const [editingNewsletter, setEditingNewsletter] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletingNewsletterId, setDeletingNewsletterId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [sendingDiscordId, setSendingDiscordId] = useState(null);
 
   useEffect(() => {
     loadNewsletterData();
@@ -63,9 +70,67 @@ const Newsletter = () => {
     window.open(`https://itcpr.org/news/${slug}`, '_blank');
   };
 
+  const handleDelete = (id) => {
+    setDeletingNewsletterId(id);
+    setShowDeleteDialog(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingNewsletterId) return;
+
+    setDeleting(true);
+    try {
+      const { error } = await supabaseServiceClient
+        .from('news')
+        .delete()
+        .eq('id', deletingNewsletterId);
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success('Newsletter deleted successfully');
+      await loadNewsletterData();
+      setShowDeleteDialog(false);
+      setDeletingNewsletterId(null);
+    } catch (error) {
+      console.error('Error deleting newsletter:', error);
+      toast.error('Error deleting newsletter. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingNewsletter(null);
+  };
+
+  const handleSendDiscord = async (news) => {
+    setSendingDiscordId(news.id);
+    try {
+      const slug = generateSlug(news.title);
+      const newsUrl = `https://itcpr.org/news/${slug}`;
+      const newsType = news.type === 'issue' ? 'Issue' : 'News';
+      const emoji = news.type === 'issue' ? '📋' : '📰';
+      const actionEmoji = news.type === 'issue' ? '📖' : '✨';
+      
+      const discordMessage = `${emoji} **${actionEmoji} New ${newsType} Just Dropped! ${actionEmoji}**
+
+🎯 **Title:** ${news.title}
+
+✍️ **Author:** ${news.author}
+
+🔗 👉 Read the full ${newsType.toLowerCase()} here: [${news.title}](${newsUrl})`;
+
+      await sendMessageToChannel(null, discordMessage);
+      toast.success('Discord message sent successfully!');
+    } catch (error) {
+      console.error('Error sending Discord notification:', error);
+      toast.error('Error sending Discord message. Please try again.');
+    } finally {
+      setSendingDiscordId(null);
+    }
   };
 
 
@@ -213,11 +278,35 @@ const Newsletter = () => {
                     View
                   </button>
                   <button
+                    className={styles.btnDiscord}
+                    onClick={() => handleSendDiscord(news)}
+                    disabled={sendingDiscordId === news.id}
+                  >
+                    {sendingDiscordId === news.id ? (
+                      <>
+                        <span className="material-icons" style={{ animation: 'spin 1s linear infinite' }}>refresh</span>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-icons">send</span>
+                        Discord
+                      </>
+                    )}
+                  </button>
+                  <button
                     className={styles.btnEdit}
                     onClick={() => handleEdit(news.id)}
                   >
                     <span className="material-icons">edit</span>
                     Edit
+                  </button>
+                  <button
+                    className={styles.btnDelete}
+                    onClick={() => handleDelete(news.id)}
+                  >
+                    <span className="material-icons">delete</span>
+                    Delete
                   </button>
                 </div>
               </div>
@@ -233,6 +322,17 @@ const Newsletter = () => {
           onSave={handleSave}
         />
       )}
+
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        onClose={() => {
+          setShowDeleteDialog(false);
+          setDeletingNewsletterId(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Newsletter"
+        message="Are you sure you want to delete this newsletter? This action cannot be undone."
+      />
 
     </div>
   );
