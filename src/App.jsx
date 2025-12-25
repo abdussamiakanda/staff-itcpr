@@ -10,6 +10,7 @@ import Finance from './pages/Finance';
 import Issues from './pages/Issues';
 import Emails from './pages/Emails';
 import Newsletter from './pages/Newsletter';
+import Publications from './pages/Publications';
 import Responsibilities from './pages/Responsibilities';
 import Technicals from './pages/Technicals';
 import LoadingOverlay from './components/LoadingOverlay';
@@ -68,6 +69,7 @@ function App() {
             <Route path="/issues" element={<Issues />} />
             <Route path="/emails" element={<Emails />} />
             <Route path="/newsletter" element={<Newsletter />} />
+            <Route path="/publications" element={<Publications />} />
             <Route path="/responsibilities" element={<Responsibilities />} />
             <Route path="/technicals" element={<Technicals />} />
           </Routes>

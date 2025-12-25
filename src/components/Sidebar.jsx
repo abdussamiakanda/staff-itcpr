@@ -52,6 +52,7 @@ const Sidebar = ({ currentPath, isOpen, onClose }) => {
     { path: '/issues', icon: 'bug_report', label: 'Issues' },
     { path: '/emails', icon: 'email', label: 'Send Emails' },
     { path: '/newsletter', icon: 'newspaper', label: 'Newsletter' },
+    { path: '/publications', icon: 'article', label: 'Publications' },
     { path: '/responsibilities', icon: 'description', label: 'Responsibilities' },
     { path: '/technicals', icon: 'build', label: 'Technicals' },
   ];

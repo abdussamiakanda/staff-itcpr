@@ -11,6 +11,7 @@ const Finance = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedFinance, setSelectedFinance] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterCurrency, setFilterCurrency] = useState('all');
   const [stats, setStats] = useState({
@@ -180,9 +181,13 @@ const Finance = () => {
 
   // Filter finances
   const filteredFinances = finances.filter(f => {
+    const matchesSearch = !searchQuery || 
+      (f.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (f.category || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (f.amount || '').toString().includes(searchQuery);
     const matchesType = filterType === 'all' || f.type === filterType;
     const matchesCurrency = filterCurrency === 'all' || f.currency === filterCurrency;
-    return matchesType && matchesCurrency;
+    return matchesSearch && matchesType && matchesCurrency;
   });
 
   if (loading) {
@@ -251,6 +256,15 @@ const Finance = () => {
         </div>
 
         <div className={styles.filtersContainer}>
+          <div className={styles.searchBox}>
+            <span className="material-icons">search</span>
+            <input
+              type="text"
+              placeholder="Search by description, category, or amount..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
           <div className={styles.statusFilter}>
             <button
               className={filterType === 'all' ? styles.filterBtnActive : styles.filterBtn}
@@ -298,7 +312,7 @@ const Finance = () => {
             <div className={styles.emptyState}>
               <span className="material-icons">inbox</span>
               <h3>No Finance Records Found</h3>
-              <p>{filterType !== 'all' || filterCurrency !== 'all' ? 'Try adjusting your filters.' : 'No finance records have been added yet.'}</p>
+              <p>{searchQuery || filterType !== 'all' || filterCurrency !== 'all' ? 'Try adjusting your filters or search query.' : 'No finance records have been added yet.'}</p>
             </div>
           ) : (
             filteredFinances.map((finance) => (

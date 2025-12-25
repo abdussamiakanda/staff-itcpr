@@ -1,4 +1,4 @@
-.financeSection {
+.publicationsSection {
   width: 100%;
   animation: fadeIn 0.4s ease-out;
 }
@@ -49,7 +49,7 @@
   gap: var(--spacing-md);
 }
 
-.btnAddFinance {
+.btnAddPublication {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -65,7 +65,7 @@
   box-shadow: 0 4px 12px rgba(157, 157, 189, 0.25);
 }
 
-.btnAddFinance:hover {
+.btnAddPublication:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(157, 157, 189, 0.35);
 }
@@ -89,60 +89,6 @@
   border-color: var(--primary);
   background: var(--primary);
   color: white;
-}
-
-.overviewContainer {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-xl);
-}
-
-.statCard {
-  background: var(--bg-main);
-  border-radius: 12px;
-  padding: var(--spacing-lg);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--border-color);
-}
-
-.statHeader {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-sm);
-}
-
-.statIcon {
-  font-size: 1.5rem;
-  color: var(--primary);
-}
-
-.statTitle {
-  font-size: 0.8125rem;
-  color: var(--text-medium);
-  font-weight: 500;
-}
-
-.statValue {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-dark);
-  margin-bottom: 4px;
-  line-height: 1.2;
-}
-
-.statValue.positive {
-  color: rgb(23, 170, 0);
-}
-
-.statValue.negative {
-  color: rgba(255, 0, 0, 1);
-}
-
-.statSubtitle {
-  font-size: 0.8125rem;
-  color: var(--text-medium);
 }
 
 .filtersContainer {
@@ -198,126 +144,195 @@
   font-weight: 400;
 }
 
-.statusFilter,
-.currencyFilter {
+.typeFilter {
   display: flex;
-  gap: var(--spacing-xs);
-  flex-wrap: wrap;
-  background: var(--bg-light);
-  padding: 4px;
-  border-radius: 12px;
+  align-items: center;
+  min-width: 200px;
 }
 
-.filterBtn {
-  padding: 10px 20px;
-  border: none;
-  background: transparent;
-  color: var(--text-medium);
+.typeFilterSelect {
+  width: 100%;
+  padding: 10px 12px;
+  padding-left: 40px;
+  border: 2px solid var(--border-color);
   border-radius: 8px;
+  background: var(--bg-main);
+  color: var(--text-dark);
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%239D9DBD' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 12px center;
+  background-size: 16px;
+  appearance: none;
 }
 
-.filterBtn:hover {
-  color: var(--primary);
-  background: rgba(157, 157, 189, 0.1);
+.typeFilterSelect:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(157, 157, 189, 0.1);
 }
 
-.filterBtnActive {
-  padding: 10px 20px;
-  border: none;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  color: white;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
+.typeFilterSelect option {
+  padding: 8px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(157, 157, 189, 0.3);
 }
 
-.filterBtnActive:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(157, 157, 189, 0.4);
-}
-
-.financeList {
+.publicationsList {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
 }
 
-.financeItem {
+.publicationCard {
   background: var(--bg-main);
-  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: var(--spacing-lg);
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
-  gap: var(--spacing-md);
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
-.financeItem:hover {
+.publicationCard::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.publicationCard:hover {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   transform: translateY(-2px);
   border-color: var(--primary-light);
 }
 
-.financeItem.income {
-  border-left: 4px solid rgb(23, 170, 0);
+.publicationCard:hover::before {
+  opacity: 1;
 }
 
-.financeItem.expense {
-  border-left: 4px solid rgba(255, 0, 0, 1);
-}
-
-.financeDescription {
-  font-size: 0.9375rem;
-  color: var(--text-dark);
-  font-weight: 500;
-}
-
-.financeAmount {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--text-dark);
-  text-align: right;
-}
-
-.financeDate {
-  font-size: 0.875rem;
-  color: var(--text-medium);
-  text-align: right;
-}
-
-.financeTypeBadge {
+.publicationHeader {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  flex-wrap: wrap;
 }
 
-.typeBadge {
+.publicationTags {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.publicationTag {
+  background: var(--primary-lighter);
+  color: var(--primary);
   padding: 6px 12px;
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  border: 1px solid var(--primary);
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: all 0.2s ease;
 }
 
-.typeBadge.income {
-  background: rgba(23, 170, 0, 0.1);
-  color: rgb(23, 170, 0);
+.publicationTag:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-1px);
 }
 
-.typeBadge.expense {
-  background: rgba(255, 0, 0, 0.1);
-  color: rgba(255, 0, 0, 1);
+.publicationActions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
+}
+
+.btnEdit,
+.btnDelete {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--border-color);
+  background: var(--bg-main);
+  color: var(--text-medium);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnEdit:hover {
+  background: var(--primary-lighter);
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btnDelete:hover {
+  background: var(--error-lighter);
+  color: var(--error);
+  border-color: var(--error);
+  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.2);
+  transform: translateY(-1px);
+}
+
+.btnEdit .material-icons,
+.btnDelete .material-icons {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.publicationContent {
+  color: var(--text-dark);
+  font-size: 0.9375rem;
+  margin: 0;
+  line-height: 1.7;
+}
+
+.publicationContent p {
+  margin: 0;
+}
+
+.publicationContent b {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.doiLink {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  display: inline;
+  transition: all 0.2s ease;
+  margin-left: 0;
+}
+
+.doiLink:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+.doiLink:visited {
+  color: var(--primary);
 }
 
 .loadingState {
@@ -389,13 +404,13 @@
 }
 
 @media (max-width: 768px) {
-  .overviewContainer {
-    grid-template-columns: 1fr;
-  }
-  
   .sectionHeader {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .sectionTitle h2 {
+    font-size: 1.75rem;
   }
 
   .filtersContainer {
@@ -403,13 +418,37 @@
     padding: var(--spacing-md);
   }
 
-  .financeItem {
-    grid-template-columns: 1fr;
+  .searchBox {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .publicationCard {
+    padding: var(--spacing-md);
+  }
+
+  .publicationHeader {
+    flex-direction: column;
+    align-items: flex-start;
     gap: var(--spacing-sm);
   }
 
-  .financeAmount,
-  .financeDate {
-    text-align: left;
+  .publicationTags {
+    width: 100%;
+  }
+
+  .publicationActions {
+    align-self: flex-end;
   }
 }
+
+@media (max-width: 480px) {
+  .sectionTitle h2 {
+    font-size: 1.5rem;
+  }
+
+  .publicationContent {
+    font-size: 0.875rem;
+  }
+}
+
