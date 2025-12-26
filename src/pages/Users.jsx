@@ -268,14 +268,14 @@ const Users = () => {
         try {
           const message = `
             <p>
-              We are informing you that your position at ITCPR has been terminated. To get
+              We are informing you that your position at ITCPR Research Institute has been terminated. To get
               more information about your termination, please contact us at info@itcpr.org.
             </p>
             <p>
-              We appreciate your contributions and wish you the best in your future endeavors.
+              We appreciate your contributions to our research and wish you the best in your future endeavors.
             </p>
           `;
-          await sendEmail(userDetails.pemail, 'Position Status at ITCPR', getEmailTemplate(userDetails.name, message));
+          await sendEmail(userDetails.pemail, 'Position Status at ITCPR Research Institute', getEmailTemplate(userDetails.name, message));
         } catch (error) {
           console.error('Error sending termination email:', error);
         }
@@ -304,8 +304,57 @@ const Users = () => {
 
       const userDetails = userSnap.data();
       const newStatus = userDetails.status === 'active' ? 'flagged' : 'active';
+      const isReinstating = newStatus === 'active' && userDetails.status === 'flagged';
+      const isFlagging = newStatus === 'flagged' && userDetails.status === 'active';
 
       await updateDoc(userRef, { status: newStatus });
+
+      // Send flag email if user is being flagged
+      if (isFlagging && userDetails.pemail) {
+        try {
+          const message = `
+            <p>
+              Despite prior reminders, there have been ongoing issues regarding your compliance with the required responsibilities and expectations of the ITCPR program. These include failures to meet assigned obligations and/or lack of participation without proper notice.
+            </p>
+            <p>
+              As a result, you have been officially flagged in the ITCPR records.
+            </p>
+            <p>
+              This flag will remain active until the next evaluation cycle. Please note that any further instance of non-compliance, including but not limited to missed responsibilities, unexcused absence, or failure to follow program guidelines, will result in immediate termination from the program.
+            </p>
+            <p>
+              This action is taken in accordance with ITCPR's accountability and professionalism policies and is considered final.
+            </p>
+            <p>
+              If you believe this notice has been issued in error, you must contact your designated mentor or group instructor immediately. Otherwise, full compliance is expected going forward.
+            </p>
+          `;
+          await sendEmail(userDetails.pemail, 'Account Status Update at ITCPR Research Institute', getEmailTemplate(userDetails.name, message));
+        } catch (error) {
+          console.error('Error sending flag email:', error);
+        }
+      }
+
+      // Send reinstatement email if user is being reinstated
+      if (isReinstating && userDetails.pemail) {
+        try {
+          const message = `
+            <p>
+              Following a review of your recent status, we confirm that your flag in the ITCPR records has been removed, and your participation in the program has been reinstated effective immediately.
+            </p>
+            <p>
+              This reinstatement reflects our expectation that all responsibilities, communication standards, and program guidelines will be followed consistently going forward. Maintaining regular participation and timely completion of assigned tasks is essential to ensure smooth collaboration within the group.
+            </p>
+            <p>
+              Please treat this reinstatement as an opportunity to move forward with renewed focus and professionalism. If you have any questions about expectations or require clarification, you are encouraged to contact your designated mentor or group instructor.
+            </p>
+          `;
+          await sendEmail(userDetails.pemail, 'Position Reinstated at ITCPR Research Institute', getEmailTemplate(userDetails.name, message));
+        } catch (error) {
+          console.error('Error sending reinstatement email:', error);
+        }
+      }
+
       await loadUsers();
       setSelectedUser(null);
       toast.success(`User status changed to ${newStatus}`);
