@@ -310,7 +310,7 @@ const Users = () => {
       await updateDoc(userRef, { status: newStatus });
 
       // Send flag email if user is being flagged
-      if (isFlagging && userDetails.pemail) {
+      if (isFlagging && userDetails.email) {
         try {
           const message = `
             <p>
@@ -329,14 +329,14 @@ const Users = () => {
               If you believe this notice has been issued in error, you must contact your designated mentor or group instructor immediately. Otherwise, full compliance is expected going forward.
             </p>
           `;
-          await sendEmail(userDetails.pemail, 'Account Status Update at ITCPR Research Institute', getEmailTemplate(userDetails.name, message));
+          await sendEmail(userDetails.email, 'Official Notice of Non-Compliance', getEmailTemplate(userDetails.name, message));
         } catch (error) {
           console.error('Error sending flag email:', error);
         }
       }
 
       // Send reinstatement email if user is being reinstated
-      if (isReinstating && userDetails.pemail) {
+      if (isReinstating && userDetails.email) {
         try {
           const message = `
             <p>
@@ -349,7 +349,7 @@ const Users = () => {
               Please treat this reinstatement as an opportunity to move forward with renewed focus and professionalism. If you have any questions about expectations or require clarification, you are encouraged to contact your designated mentor or group instructor.
             </p>
           `;
-          await sendEmail(userDetails.pemail, 'Position Reinstated at ITCPR Research Institute', getEmailTemplate(userDetails.name, message));
+          await sendEmail(userDetails.email, 'Reinstatement Notice', getEmailTemplate(userDetails.name, message));
         } catch (error) {
           console.error('Error sending reinstatement email:', error);
         }
