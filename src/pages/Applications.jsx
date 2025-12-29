@@ -233,7 +233,7 @@ const Applications = () => {
           successfully shortlisted for the next stage: the interview process.
         </p>
         <p>
-          At your earliest convenience, please email us at <b>info@itcpr.org</b>
+          At your earliest convenience, please email us at <b>majasem@mail.itcpr.org</b>
           to coordinate a suitable time for your interview. Include your
           availability and preferred language (English or Bangla), and we
           will do our best to accommodate your schedule. The interview will
@@ -246,7 +246,7 @@ const Applications = () => {
         </p>
         <p>
           If you have any questions or need further assistance, feel free
-          to reach out to <b>info@itcpr.org</b>. We look forward to speaking
+          to reach out to <b>majasem@mail.itcpr.org</b>. We look forward to speaking
           with you soon.
         </p>
         <p>
