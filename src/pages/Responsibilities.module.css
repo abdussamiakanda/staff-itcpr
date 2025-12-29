@@ -49,6 +49,32 @@
   gap: var(--spacing-md);
 }
 
+.btnAddResponsibility {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 10px 20px;
+  background: var(--primary);
+  color: white;
+  border: 2px solid var(--primary);
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btnAddResponsibility:hover {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(157, 157, 189, 0.3);
+}
+
+.btnAddResponsibility .material-icons {
+  font-size: 1.125rem;
+}
+
 .btnRefresh {
   display: inline-flex;
   align-items: center;
@@ -256,6 +282,59 @@
   margin: 0;
 }
 
+.responsibilityActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+}
+
+.btnEdit,
+.btnDelete {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+}
+
+.btnEdit {
+  background: var(--bg-light);
+  color: var(--text-dark);
+  border-color: var(--border-color);
+}
+
+.btnEdit:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.btnDelete {
+  background: var(--bg-light);
+  color: var(--error);
+  border-color: var(--border-color);
+}
+
+.btnDelete:hover {
+  background: var(--error);
+  color: white;
+  border-color: var(--error);
+  transform: translateY(-1px);
+}
+
+.btnEdit .material-icons,
+.btnDelete .material-icons {
+  font-size: 1rem;
+}
+
 .loadingState {
   display: flex;
   flex-direction: column;
@@ -339,6 +418,7 @@
     width: 100%;
   }
 
+  .btnAddResponsibility,
   .btnRefresh {
     width: 100%;
     justify-content: center;

@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, addDoc, updateDoc, doc, serverTimestamp, deleteDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import ResponsibilityModal from '../components/ResponsibilityModal';
+import ConfirmDialog from '../components/ConfirmDialog';
+import toast from 'react-hot-toast';
 import styles from './Responsibilities.module.css';
 
 const Responsibilities = () => {
   const [responsibilities, setResponsibilities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [editingResponsibility, setEditingResponsibility] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletingResponsibilityId, setDeletingResponsibilityId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadResponsibilities();
@@ -62,6 +71,72 @@ const Responsibilities = () => {
     });
   };
 
+  const handleAdd = () => {
+    setEditingResponsibility(null);
+    setShowModal(true);
+  };
+
+  const handleEdit = (id) => {
+    const responsibility = responsibilities.find(r => r.id === id);
+    setEditingResponsibility(responsibility);
+    setShowModal(true);
+  };
+
+  const handleDelete = (id) => {
+    setDeletingResponsibilityId(id);
+    setShowDeleteDialog(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingResponsibilityId) return;
+
+    setDeleting(true);
+    try {
+      await deleteDoc(doc(db, 'responsibilities', deletingResponsibilityId));
+      toast.success('Responsibility deleted successfully');
+      await loadResponsibilities();
+      setShowDeleteDialog(false);
+      setDeletingResponsibilityId(null);
+    } catch (error) {
+      console.error('Error deleting responsibility:', error);
+      toast.error('Error deleting responsibility. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingResponsibility(null);
+  };
+
+  const handleSave = async (formData) => {
+    setSaving(true);
+    try {
+      const responsibilityData = {
+        ...formData,
+        createdAt: editingResponsibility ? editingResponsibility.createdAt : serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      if (editingResponsibility) {
+        await updateDoc(doc(db, 'responsibilities', editingResponsibility.id), responsibilityData);
+        toast.success('Responsibility updated successfully');
+      } else {
+        await addDoc(collection(db, 'responsibilities'), responsibilityData);
+        toast.success('Responsibility added successfully');
+      }
+      
+      await loadResponsibilities();
+      handleCloseModal();
+    } catch (error) {
+      console.error('Error saving responsibility:', error);
+      toast.error('Error saving responsibility. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Filter responsibilities
   const filteredResponsibilities = responsibilities.filter(resp => {
     const matchesSearch = !searchQuery || 
@@ -91,6 +166,10 @@ const Responsibilities = () => {
             <p>Policies, procedures, and guidelines for staff tasks</p>
           </div>
           <div className={styles.sectionActions}>
+            <button className={styles.btnAddResponsibility} onClick={handleAdd}>
+              <span className="material-icons">add</span>
+              Add Responsibility
+            </button>
             <button className={styles.btnRefresh} onClick={loadResponsibilities}>
               <i className="fas fa-sync-alt"></i>
               Refresh
@@ -155,11 +234,52 @@ const Responsibilities = () => {
                     </div>
                   )}
                 </div>
+                <div className={styles.responsibilityActions}>
+                  <button 
+                    className={styles.btnEdit}
+                    onClick={() => handleEdit(resp.id)}
+                  >
+                    <span className="material-icons">edit</span>
+                    Edit
+                  </button>
+                  <button 
+                    className={styles.btnDelete}
+                    onClick={() => handleDelete(resp.id)}
+                  >
+                    <span className="material-icons">delete</span>
+                    Delete
+                  </button>
+                </div>
               </div>
             ))
           )}
         </div>
       </section>
+
+      {showModal && (
+        <ResponsibilityModal
+          responsibility={editingResponsibility}
+          onClose={handleCloseModal}
+          onSave={handleSave}
+          saving={saving}
+        />
+      )}
+
+      {showDeleteDialog && (
+        <ConfirmDialog
+          isOpen={showDeleteDialog}
+          onClose={() => {
+            setShowDeleteDialog(false);
+            setDeletingResponsibilityId(null);
+          }}
+          onConfirm={handleConfirmDelete}
+          title="Delete Responsibility"
+          message="Are you sure you want to delete this responsibility? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          isLoading={deleting}
+        />
+      )}
     </div>
   );
 };
