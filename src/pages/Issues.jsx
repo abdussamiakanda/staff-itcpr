@@ -1,29 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp, getDoc, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp, getDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { useAuth } from '../hooks/useAuth';
 import { sendEmail, getEmailTemplate } from '../utils/email';
 import IssueModal from '../components/IssueModal';
-import IssueDetailsModal from '../components/IssueDetailsModal';
-import CommentModal from '../components/CommentModal';
 import DeleteIssueModal from '../components/DeleteIssueModal';
 import styles from './Issues.module.css';
 
 const Issues = () => {
   const { user, userData } = useAuth();
+  const navigate = useNavigate();
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedIssue, setSelectedIssue] = useState(null);
-  const [showCommentModal, setShowCommentModal] = useState(false);
-  const [editingComment, setEditingComment] = useState(null);
+  const [editingIssueId, setEditingIssueId] = useState(null);
+  const [editingIssueData, setEditingIssueData] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingIssueId, setDeletingIssueId] = useState(null);
   const [addingIssue, setAddingIssue] = useState(false);
   const [editingIssue, setEditingIssue] = useState(false);
   const [deletingIssue, setDeletingIssue] = useState(false);
-  const [resolvingIssue, setResolvingIssue] = useState(false);
-  const [unresolvingIssue, setUnresolvingIssue] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterType, setFilterType] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -132,7 +130,7 @@ const Issues = () => {
       }
 
       const docRef = await addDoc(collection(db, 'issues'), issueData);
-      const issueUrl = `${window.location.origin}/issues`;
+      const issueUrl = `${window.location.origin}/issues/${docRef.id}`;
       const issueType = formData.type === 'event' ? 'Event' : 'Issue';
       const issueStatus = formData.type === 'event' ? 'Scheduled' : 'Pending';
       
@@ -147,7 +145,7 @@ const Issues = () => {
         </div>
         <p style="margin-top: 20px;">
           <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            View All Issues
+            View ${issueType}
           </a>
         </p>
       `;
@@ -186,7 +184,7 @@ const Issues = () => {
       // Get the issue to include more details
       const issueDoc = await getDoc(doc(db, 'issues', id));
       const issue = issueDoc.data();
-      const issueUrl = `${window.location.origin}/issues`;
+      const issueUrl = `${window.location.origin}/issues/${id}`;
       const issueType = formData.type === 'event' ? 'Event' : 'Issue';
       const issueStatus = issue.resolvedAt ? 'Resolved' : (formData.type === 'event' ? 'Scheduled' : 'Pending');
       
@@ -201,7 +199,7 @@ const Issues = () => {
         </div>
         <p style="margin-top: 20px;">
           <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            View All Issues
+            View ${issueType}
           </a>
         </p>
       `;
@@ -212,7 +210,6 @@ const Issues = () => {
         user?.uid
       );
 
-      setSelectedIssue(null);
       await loadIssues();
       toast.success('Issue updated successfully');
     } catch (error) {
@@ -253,7 +250,7 @@ const Issues = () => {
       );
 
       setShowDeleteModal(false);
-      setSelectedIssue(null);
+      setDeletingIssueId(null);
       await loadIssues();
       toast.success('Issue deleted successfully');
     } catch (error) {
@@ -264,249 +261,8 @@ const Issues = () => {
     }
   };
 
-  const handleResolveIssue = async (id) => {
-    setResolvingIssue(true);
-    try {
-      // Get issue details before updating
-      const issueDoc = await getDoc(doc(db, 'issues', id));
-      const issue = issueDoc.data();
-      
-      await updateDoc(doc(db, 'issues', id), { resolvedAt: serverTimestamp() });
-      
-      const issueUrl = `${window.location.origin}/issues`;
-      const message = `
-        <p><b>${userData?.name || userData?.displayName || user?.email || 'Unknown'}</b> resolved an issue in the ITCPR Staff Portal.</p>
-        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
-          <p><b>Issue:</b> ${issue?.title || 'N/A'}</p>
-          <p><b>Status:</b> <span style="color: #4CAF50; font-weight: bold;">Resolved</span></p>
-          ${issue?.description ? `<p><b>Description:</b><br>${issue.description.replace(/\n/g, '<br>')}</p>` : ''}
-        </div>
-        <p style="margin-top: 20px;">
-          <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            View All Issues
-          </a>
-        </p>
-      `;
-      
-      await notifyStaff(
-        'An Issue was Resolved in ITCPR Staff Portal',
-        message,
-        user?.uid
-      );
-      
-      await loadIssues();
-      
-      // Update the selected issue state after loading is complete
-      if (selectedIssue && selectedIssue.id === id) {
-        setSelectedIssue(prev => ({
-          ...prev,
-          resolvedAt: Timestamp.now() // Use Firestore Timestamp
-        }));
-      }
-      
-      toast.success('Issue resolved successfully');
-    } catch (error) {
-      console.error('Error resolving issue:', error);
-      toast.error('Error resolving issue. Please try again.');
-    } finally {
-      setResolvingIssue(false);
-    }
-  };
-
-  const handleUnresolveIssue = async (id) => {
-    setUnresolvingIssue(true);
-    try {
-      // Get issue details before updating
-      const issueDoc = await getDoc(doc(db, 'issues', id));
-      const issue = issueDoc.data();
-      
-      await updateDoc(doc(db, 'issues', id), { resolvedAt: null });
-      
-      const issueUrl = `${window.location.origin}/issues`;
-      const message = `
-        <p><b>${userData?.name || userData?.displayName || user?.email || 'Unknown'}</b> marked an issue as unresolved in the ITCPR Staff Portal.</p>
-        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
-          <p><b>Issue:</b> ${issue?.title || 'N/A'}</p>
-          <p><b>Status:</b> <span style="color: #ff9800; font-weight: bold;">Pending</span></p>
-          ${issue?.description ? `<p><b>Description:</b><br>${issue.description.replace(/\n/g, '<br>')}</p>` : ''}
-        </div>
-        <p style="margin-top: 20px;">
-          <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            View All Issues
-          </a>
-        </p>
-      `;
-      
-      await notifyStaff(
-        'An Issue was Unresolved in ITCPR Staff Portal',
-        message,
-        user?.uid
-      );
-      
-      await loadIssues();
-      
-      // Update the selected issue state after loading is complete
-      if (selectedIssue && selectedIssue.id === id) {
-        setSelectedIssue(prev => ({
-          ...prev,
-          resolvedAt: null
-        }));
-      }
-      
-      toast.success('Issue marked as unresolved');
-    } catch (error) {
-      console.error('Error unresolving issue:', error);
-      toast.error('Error unresolving issue. Please try again.');
-    } finally {
-      setUnresolvingIssue(false);
-    }
-  };
-
-  const handleAddComment = async (issueId, comment) => {
-    try {
-      await addDoc(collection(db, 'issues', issueId, 'comments'), {
-        comment,
-        userId: user.uid,
-        userName: userData?.name || userData?.displayName || user?.email || 'Unknown',
-        createdAt: serverTimestamp()
-      });
-
-      // Get issue details for the email
-      const issueDoc = await getDoc(doc(db, 'issues', issueId));
-      const issue = issueDoc.data();
-      const issueUrl = `${window.location.origin}/issues`;
-      
-      const message = `
-        <p><b>${userData?.name || userData?.displayName || user?.email || 'Unknown'}</b> added a comment to an issue in the ITCPR Staff Portal.</p>
-        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
-          <p><b>Issue:</b> ${issue?.title || 'N/A'}</p>
-          <p><b>Comment:</b><br>${comment.replace(/\n/g, '<br>')}</p>
-        </div>
-        <p style="margin-top: 20px;">
-          <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            View Issue
-          </a>
-        </p>
-      `;
-
-      await notifyStaff(
-        'A New Comment was Created in ITCPR Staff Portal',
-        message,
-        user?.uid
-      );
-
-      setShowCommentModal(false);
-      // Reload comments for the selected issue
-      if (selectedIssue && selectedIssue.id === issueId) {
-        await loadComments(issueId);
-      }
-      toast.success('Comment added successfully');
-    } catch (error) {
-      console.error('Error adding comment:', error);
-      toast.error('Error adding comment. Please try again.');
-    }
-  };
-
-  const handleEditComment = async (issueId, commentId, comment) => {
-    try {
-      await updateDoc(doc(db, 'issues', issueId, 'comments', commentId), {
-        comment,
-        createdAt: serverTimestamp()
-      });
-
-      // Get issue details for the email
-      const issueDoc = await getDoc(doc(db, 'issues', issueId));
-      const issue = issueDoc.data();
-      const issueUrl = `${window.location.origin}/issues`;
-      
-      const message = `
-        <p><b>${userData?.name || userData?.displayName || user?.email || 'Unknown'}</b> edited a comment on an issue in the ITCPR Staff Portal.</p>
-        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
-          <p><b>Issue:</b> ${issue?.title || 'N/A'}</p>
-          <p><b>Updated Comment:</b><br>${comment.replace(/\n/g, '<br>')}</p>
-        </div>
-        <p style="margin-top: 20px;">
-          <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            View Issue
-          </a>
-        </p>
-      `;
-
-      await notifyStaff(
-        'A Comment was Edited in ITCPR Staff Portal',
-        message,
-        user?.uid
-      );
-
-      setShowCommentModal(false);
-      setEditingComment(null);
-      // Reload comments for the selected issue
-      if (selectedIssue && selectedIssue.id === issueId) {
-        await loadComments(issueId);
-      }
-      toast.success('Comment updated successfully');
-    } catch (error) {
-      console.error('Error editing comment:', error);
-      toast.error('Error editing comment. Please try again.');
-    }
-  };
-
-  const handleDeleteComment = async (issueId, commentId) => {
-    try {
-      // Get issue details before deleting comment
-      const issueDoc = await getDoc(doc(db, 'issues', issueId));
-      const issue = issueDoc.data();
-      
-      await deleteDoc(doc(db, 'issues', issueId, 'comments', commentId));
-      
-      const issueUrl = `${window.location.origin}/issues`;
-      const message = `
-        <p><b>${userData?.name || userData?.displayName || user?.email || 'Unknown'}</b> deleted a comment from an issue in the ITCPR Staff Portal.</p>
-        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
-          <p><b>Issue:</b> ${issue?.title || 'N/A'}</p>
-        </div>
-        <p style="margin-top: 20px;">
-          <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            View Issue
-          </a>
-        </p>
-      `;
-      
-      await notifyStaff(
-        'A Comment was Deleted in ITCPR Staff Portal',
-        message,
-        user?.uid
-      );
-
-      // Reload comments for the selected issue
-      if (selectedIssue && selectedIssue.id === issueId) {
-        await loadComments(issueId);
-      }
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-      toast.error('Error deleting comment. Please try again.');
-    }
-  };
-
-  const loadComments = async (issueId) => {
-    try {
-      const commentsRef = collection(db, 'issues', issueId, 'comments');
-      const q = query(commentsRef, orderBy('createdAt', 'desc'));
-      const snapshot = await getDocs(q);
-      const comments = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      setSelectedIssue(prev => prev ? { ...prev, comments } : null);
-    } catch (error) {
-      console.error('Error loading comments:', error);
-    }
-  };
-
-  const handleViewIssue = async (issue) => {
-    setSelectedIssue(issue);
-    await loadComments(issue.id);
+  const handleViewIssue = (issue) => {
+    navigate(`/issues/${issue.id}`);
   };
 
   // Filter issues
@@ -716,60 +472,32 @@ const Issues = () => {
         />
       )}
 
-      {selectedIssue && !showDeleteModal && (
-        <IssueDetailsModal
-          issue={selectedIssue}
-          onClose={() => setSelectedIssue(null)}
-          onEdit={(issue) => setSelectedIssue({ ...issue, isEdit: true })}
-          onDelete={() => setShowDeleteModal(true)}
-          onResolve={handleResolveIssue}
-          onUnresolve={handleUnresolveIssue}
-          onAddComment={() => setShowCommentModal(true)}
-          onEditComment={(comment) => {
-            setEditingComment(comment);
-            setShowCommentModal(true);
-          }}
-          onDeleteComment={handleDeleteComment}
-          formatDate={formatDate}
-          formatEventDate={formatEventDate}
-          isAdmin={isAdmin}
-          currentUserId={user?.uid}
-          resolving={resolvingIssue}
-          unresolving={unresolvingIssue}
-        />
-      )}
-
-      {selectedIssue && selectedIssue.isEdit && (
+      {editingIssueId && editingIssueData && (
         <IssueModal
-          issue={selectedIssue}
-          onClose={() => setSelectedIssue(null)}
-          onSave={(formData) => handleEditIssue(selectedIssue.id, formData)}
+          issue={{ ...editingIssueData, isEdit: true }}
+          onClose={() => {
+            setEditingIssueId(null);
+            setEditingIssueData(null);
+            setEditingIssue(false);
+          }}
+          onSave={(formData) => {
+            handleEditIssue(editingIssueId, formData);
+            setEditingIssueId(null);
+            setEditingIssueData(null);
+          }}
           saving={editingIssue}
         />
       )}
 
-      {showCommentModal && selectedIssue && (
-        <CommentModal
-          issueId={selectedIssue.id}
-          comment={editingComment}
-          onClose={() => {
-            setShowCommentModal(false);
-            setEditingComment(null);
-          }}
-          onSave={editingComment 
-            ? (comment) => handleEditComment(selectedIssue.id, editingComment.id, comment)
-            : (comment) => handleAddComment(selectedIssue.id, comment)
-          }
-        />
-      )}
-
-      {showDeleteModal && selectedIssue && (
+      {showDeleteModal && deletingIssueId && (
         <DeleteIssueModal
           onClose={() => {
             setShowDeleteModal(false);
-            setSelectedIssue(null);
+            setDeletingIssueId(null);
           }}
-          onConfirm={() => handleDeleteIssue(selectedIssue.id)}
+          onConfirm={() => {
+            handleDeleteIssue(deletingIssueId);
+          }}
           deleting={deletingIssue}
         />
       )}

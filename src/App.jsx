@@ -8,6 +8,7 @@ import Applications from './pages/Applications';
 import Users from './pages/Users';
 import Finance from './pages/Finance';
 import Issues from './pages/Issues';
+import IssueDetail from './pages/IssueDetail';
 import Emails from './pages/Emails';
 import Newsletter from './pages/Newsletter';
 import Publications from './pages/Publications';
@@ -67,6 +68,7 @@ function App() {
             <Route path="/users" element={<Users />} />
             <Route path="/finance" element={<Finance />} />
             <Route path="/issues" element={<Issues />} />
+            <Route path="/issues/:id" element={<IssueDetail />} />
             <Route path="/emails" element={<Emails />} />
             <Route path="/newsletter" element={<Newsletter />} />
             <Route path="/publications" element={<Publications />} />

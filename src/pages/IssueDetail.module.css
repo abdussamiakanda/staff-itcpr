@@ -1,0 +1,524 @@
+.issueDetailPage {
+  width: 100%;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 2px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.btnBack {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btnBack:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.issueActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.btnResolve,
+.btnUnresolve,
+.btnEdit,
+.btnDelete {
+  padding: 10px 20px;
+  font-size: 0.875rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.btnResolve {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btnResolve:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btnUnresolve {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.btnUnresolve:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+.btnEdit {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(157, 157, 189, 0.3);
+}
+
+.btnEdit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(157, 157, 189, 0.4);
+}
+
+.btnDelete {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btnDelete:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+.btnResolve:disabled,
+.btnUnresolve:disabled,
+.btnEdit:disabled,
+.btnDelete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+}
+
+.issueContent {
+  background: var(--bg-main);
+  border-radius: 16px;
+  padding: var(--spacing-xl);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+}
+
+.issueHeader {
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.issueHeader h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0 0 var(--spacing-md) 0;
+  letter-spacing: -0.02em;
+}
+
+.issueMetaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.issueMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.issueDate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: var(--text-medium);
+}
+
+.issueDate .material-icons {
+  font-size: 1rem;
+}
+
+.issueStatus {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.issueStatus.pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.issueStatus.resolved {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.issueCreator,
+.issueResolved {
+  font-size: 0.875rem;
+  color: var(--text-medium);
+  display: inline-flex;
+  align-items: center;
+}
+
+.issueDescription {
+  font-size: 0.9375rem;
+  color: var(--text-dark);
+  line-height: 1.6;
+  margin-top: var(--spacing-md);
+}
+
+.commentsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.commentsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 2px solid var(--border-color);
+  margin-bottom: var(--spacing-md);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.commentsHeader h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.btnAddComment {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(157, 157, 189, 0.3);
+}
+
+.btnAddComment:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(157, 157, 189, 0.4);
+}
+
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.emptyComments {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-medium);
+}
+
+.emptyComments .material-icons {
+  font-size: 64px;
+  color: var(--border-color);
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.emptyComments p {
+  font-size: 1rem;
+  color: var(--text-medium);
+  margin: 0;
+}
+
+.commentCard {
+  background: var(--bg-light);
+  border-radius: 12px;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-color);
+}
+
+.commentHeader {
+  margin-bottom: var(--spacing-sm);
+}
+
+.commentUser {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: var(--text-medium);
+}
+
+.commentUser .material-icons {
+  font-size: 1rem;
+}
+
+.commentContent {
+  font-size: 0.9375rem;
+  color: var(--text-dark);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-sm);
+}
+
+.commentContent h1,
+.commentContent h2,
+.commentContent h3,
+.commentContent h4,
+.commentContent h5,
+.commentContent h6 {
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.commentContent h1 { font-size: 1.5rem; }
+.commentContent h2 { font-size: 1.375rem; }
+.commentContent h3 { font-size: 1.25rem; }
+.commentContent h4 { font-size: 1.125rem; }
+.commentContent h5 { font-size: 1rem; }
+.commentContent h6 { font-size: 0.875rem; }
+
+.commentContent p {
+  margin-bottom: var(--spacing-sm);
+}
+
+.commentContent ul,
+.commentContent ol {
+  margin-left: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
+}
+
+.commentContent li {
+  margin-bottom: var(--spacing-xs);
+}
+
+.commentContent code {
+  background: var(--bg-light);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875em;
+  color: var(--primary);
+}
+
+.commentContent pre {
+  background: var(--bg-light);
+  padding: var(--spacing-md);
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: var(--spacing-sm);
+}
+
+.commentContent pre code {
+  background: transparent;
+  padding: 0;
+  color: var(--text-dark);
+}
+
+.commentContent blockquote {
+  border-left: 4px solid var(--primary);
+  padding-left: var(--spacing-md);
+  margin-left: 0;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-medium);
+  font-style: italic;
+}
+
+.commentContent a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.commentContent a:hover {
+  text-decoration: underline;
+}
+
+.commentContent strong {
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.commentContent em {
+  font-style: italic;
+}
+
+.commentContent table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--spacing-sm);
+}
+
+.commentContent th,
+.commentContent td {
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-color);
+}
+
+.commentContent th {
+  background: var(--bg-light);
+  font-weight: 600;
+}
+
+.commentActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--border-color);
+}
+
+.btnEditComment,
+.btnDeleteComment {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.btnEditComment {
+  background: var(--primary-lighter);
+  color: var(--primary);
+}
+
+.btnEditComment:hover:not(:disabled) {
+  background: var(--primary);
+  color: white;
+}
+
+.btnDeleteComment {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.btnDeleteComment:hover:not(:disabled) {
+  background: #ef4444;
+  color: white;
+}
+
+.btnEditComment:disabled,
+.btnDeleteComment:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+}
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3xl);
+  text-align: center;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border-color);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: var(--spacing-lg);
+}
+
+.loadingState h3 {
+  font-size: 1.5rem;
+  color: var(--text-dark);
+  margin-bottom: var(--spacing-sm);
+}
+
+@media (max-width: 768px) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .issueActions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .issueActions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .issueContent {
+    padding: var(--spacing-lg);
+  }
+
+  .issueHeader h1 {
+    font-size: 1.5rem;
+  }
+
+  .commentsHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btnAddComment {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
