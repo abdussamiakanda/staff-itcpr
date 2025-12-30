@@ -248,6 +248,11 @@
   line-height: 1.6;
 }
 
+.rejectReasonItem {
+  background: rgba(239, 68, 68, 0.05) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
 .appFilesList {
   display: flex;
   flex-direction: column;

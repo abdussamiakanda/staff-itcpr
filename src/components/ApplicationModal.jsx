@@ -24,6 +24,15 @@ const ApplicationModal = ({ application, onClose, onApprove, onReject, onSchedul
                 Submitted: {formatDate(application.createdAt || application.submittedAt || application.timestamp)}
               </span>
             </div>
+
+            {firestoreStatus === 'rejected' && application.rejectReason ? (
+              <div className={styles.appModalSection}>
+                <h4>Rejection Reason</h4>
+                <div className={`${styles.appInfoItem} ${styles.rejectReasonItem}`}>
+                  <span className={styles.appInfoValue}>{application.rejectReason}</span>
+                </div>
+              </div>
+            ) : null}
             
             <div className={styles.appModalSection}>
               <h4>Personal Information</h4>

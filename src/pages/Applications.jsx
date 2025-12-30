@@ -73,7 +73,8 @@ const Applications = () => {
           firestoreStatus: firestoreData.status || 'pending',
           interviewSent: firestoreData.interviewSent || false,
           statusUpdatedAt: firestoreData.updatedAt,
-          statusUpdatedBy: firestoreData.updatedBy
+          statusUpdatedBy: firestoreData.updatedBy,
+          rejectReason: firestoreData.rejectReason || null
         };
       });
       
