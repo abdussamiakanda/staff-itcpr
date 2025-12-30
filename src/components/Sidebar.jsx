@@ -50,6 +50,7 @@ const Sidebar = ({ currentPath, isOpen, onClose }) => {
     { path: '/users', icon: 'manage_accounts', label: 'Users' },
     { path: '/finance', icon: 'account_balance_wallet', label: 'Finances' },
     { path: '/issues', icon: 'bug_report', label: 'Issues' },
+    { path: '/events', icon: 'event', label: 'Events' },
     { path: '/emails', icon: 'email', label: 'Send Emails' },
     { path: '/newsletter', icon: 'newspaper', label: 'Newsletter' },
     { path: '/publications', icon: 'article', label: 'Publications' },

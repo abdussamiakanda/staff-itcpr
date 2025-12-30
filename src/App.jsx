@@ -14,6 +14,8 @@ import Newsletter from './pages/Newsletter';
 import Publications from './pages/Publications';
 import Responsibilities from './pages/Responsibilities';
 import Technicals from './pages/Technicals';
+import Events from './pages/Events';
+import EventDetail from './pages/EventDetail';
 import LoadingOverlay from './components/LoadingOverlay';
 
 function App() {
@@ -74,6 +76,8 @@ function App() {
             <Route path="/publications" element={<Publications />} />
             <Route path="/responsibilities" element={<Responsibilities />} />
             <Route path="/technicals" element={<Technicals />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/events/:id" element={<EventDetail />} />
           </Routes>
         </Layout>
       </Router>
