@@ -136,17 +136,13 @@ const Issues = () => {
       
       const message = `
         <p><b>${issueData.userName}</b> created a new ${issueType.toLowerCase()} in the ITCPR Staff Portal.</p>
-        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
-          <p><b>Title:</b> ${formData.title}</p>
-          <p><b>Type:</b> ${issueType}</p>
-          <p><b>Status:</b> ${issueStatus}</p>
-          ${formData.description ? `<p><b>Description:</b><br>${formData.description.replace(/\n/g, '<br>')}</p>` : ''}
-          ${formData.date ? `<p><b>Date:</b> ${formatEventDate(formData.date, formData.time, formData.timezone)}</p>` : ''}
-        </div>
-        <p style="margin-top: 20px;">
-          <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            View ${issueType}
-          </a>
+        <p><b>Title:</b> ${formData.title}</p>
+        <p><b>Type:</b> ${issueType}</p>
+        <p><b>Status:</b> ${issueStatus}</p>
+        ${formData.description ? `<p><b>Description:</b><br>${formData.description.replace(/\n/g, '<br>')}</p>` : ''}
+        ${formData.date ? `<p><b>Date:</b> ${formatEventDate(formData.date, formData.time, formData.timezone)}</p>` : ''}
+        <p>
+          <a href="${issueUrl}">View ${issueType}</a>
         </p>
       `;
       
@@ -190,17 +186,13 @@ const Issues = () => {
       
       const message = `
         <p><b>${userData?.name || userData?.displayName || user?.email || 'Unknown'}</b> edited a ${issueType.toLowerCase()} in the ITCPR Staff Portal.</p>
-        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
-          <p><b>Title:</b> ${formData.title}</p>
-          <p><b>Type:</b> ${issueType}</p>
-          <p><b>Status:</b> ${issueStatus}</p>
-          ${formData.description ? `<p><b>Description:</b><br>${formData.description.replace(/\n/g, '<br>')}</p>` : ''}
-          ${formData.date ? `<p><b>Date:</b> ${formatEventDate(formData.date, formData.time, formData.timezone)}</p>` : ''}
-        </div>
-        <p style="margin-top: 20px;">
-          <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            View ${issueType}
-          </a>
+        <p><b>Title:</b> ${formData.title}</p>
+        <p><b>Type:</b> ${issueType}</p>
+        <p><b>Status:</b> ${issueStatus}</p>
+        ${formData.description ? `<p><b>Description:</b><br>${formData.description.replace(/\n/g, '<br>')}</p>` : ''}
+        ${formData.date ? `<p><b>Date:</b> ${formatEventDate(formData.date, formData.time, formData.timezone)}</p>` : ''}
+        <p>
+          <a href="${issueUrl}">View ${issueType}</a>
         </p>
       `;
       
@@ -233,13 +225,9 @@ const Issues = () => {
       const issueUrl = `${window.location.origin}/issues`;
       const message = `
         <p><b>${userData?.name || userData?.displayName || user?.email || 'Unknown'}</b> deleted a ${issueType.toLowerCase()} from the ITCPR Staff Portal.</p>
-        ${issue?.title ? `<div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
-          <p><b>Deleted ${issueType}:</b> ${issue.title}</p>
-        </div>` : ''}
-        <p style="margin-top: 20px;">
-          <a href="${issueUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            View All Issues
-          </a>
+        ${issue?.title ? `<p><b>Deleted ${issueType}:</b> ${issue.title}</p>` : ''}
+        <p>
+          <a href="${issueUrl}">View All Issues</a>
         </p>
       `;
       
