@@ -117,7 +117,25 @@ const ScheduleItemModal = ({ scheduleItem, onClose, onSave }) => {
     if (!formData.time || !formData.title) {
       return;
     }
-    onSave(formData);
+    
+    // If type is Break, clear fields that don't apply
+    const dataToSave = formData.type === 'Break' 
+      ? {
+          ...formData,
+          level: '',
+          room: '',
+          tags: [],
+          speaker: {
+            name: '',
+            title: '',
+            organization: '',
+            bio: '',
+            topics: []
+          }
+        }
+      : formData;
+    
+    onSave(dataToSave);
   };
 
   const isEdit = !!scheduleItem;
@@ -197,30 +215,34 @@ const ScheduleItemModal = ({ scheduleItem, onClose, onSave }) => {
                   <option value="Break">Break</option>
                 </select>
               </div>
-              <div className={styles.formGroup}>
-                <label htmlFor="level">Level</label>
-                <select
-                  id="level"
-                  name="level"
-                  value={formData.level}
-                  onChange={handleChange}
-                >
-                  <option value="Beginner">Beginner</option>
-                  <option value="Intermediate">Intermediate</option>
-                  <option value="Advanced">Advanced</option>
-                </select>
-              </div>
-              <div className={styles.formGroup}>
-                <label htmlFor="room">Room</label>
-                <input
-                  type="text"
-                  id="room"
-                  name="room"
-                  value={formData.room}
-                  onChange={handleChange}
-                  placeholder="Room 302"
-                />
-              </div>
+              {formData.type !== 'Break' && (
+                <>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="level">Level</label>
+                    <select
+                      id="level"
+                      name="level"
+                      value={formData.level}
+                      onChange={handleChange}
+                    >
+                      <option value="Beginner">Beginner</option>
+                      <option value="Intermediate">Intermediate</option>
+                      <option value="Advanced">Advanced</option>
+                    </select>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="room">Room</label>
+                    <input
+                      type="text"
+                      id="room"
+                      name="room"
+                      value={formData.room}
+                      onChange={handleChange}
+                      placeholder="Room 302"
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             <div className={styles.formGroup}>
@@ -235,118 +257,122 @@ const ScheduleItemModal = ({ scheduleItem, onClose, onSave }) => {
               />
             </div>
 
-            <div className={styles.speakerSection}>
-              <h4>Speaker</h4>
-              <div className={styles.formGroup}>
-                <label htmlFor="speakerName">Speaker Name</label>
-                <input
-                  type="text"
-                  id="speakerName"
-                  value={formData.speaker.name}
-                  onChange={(e) => handleSpeakerChange('name', e.target.value)}
-                  placeholder="Speaker name"
-                />
-              </div>
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label htmlFor="speakerTitle">Speaker Title</label>
-                  <input
-                    type="text"
-                    id="speakerTitle"
-                    value={formData.speaker.title}
-                    onChange={(e) => handleSpeakerChange('title', e.target.value)}
-                    placeholder="Speaker title"
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label htmlFor="speakerOrg">Organization</label>
-                  <input
-                    type="text"
-                    id="speakerOrg"
-                    value={formData.speaker.organization}
-                    onChange={(e) => handleSpeakerChange('organization', e.target.value)}
-                    placeholder="Organization"
-                  />
-                </div>
-              </div>
-              <div className={styles.formGroup}>
-                <label htmlFor="speakerBio">Speaker Bio</label>
-                <textarea
-                  id="speakerBio"
-                  value={formData.speaker.bio}
-                  onChange={(e) => handleSpeakerChange('bio', e.target.value)}
-                  rows="2"
-                  placeholder="Speaker biography"
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Speaker Topics</label>
-                <div className={styles.arrayInput}>
-                  <input
-                    type="text"
-                    value={newTopic}
-                    onChange={(e) => setNewTopic(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleTopicAdd())}
-                    placeholder="Add topic"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleTopicAdd}
-                    className={styles.btnAdd}
-                  >
-                    Add
-                  </button>
-                </div>
-                <div className={styles.arrayList}>
-                  {formData.speaker.topics.map((topic, index) => (
-                    <div key={index} className={styles.arrayItem}>
-                      <span>{topic}</span>
+            {formData.type !== 'Break' && (
+              <>
+                <div className={styles.speakerSection}>
+                  <h4>Speaker</h4>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="speakerName">Speaker Name</label>
+                    <input
+                      type="text"
+                      id="speakerName"
+                      value={formData.speaker.name}
+                      onChange={(e) => handleSpeakerChange('name', e.target.value)}
+                      placeholder="Speaker name"
+                    />
+                  </div>
+                  <div className={styles.formRow}>
+                    <div className={styles.formGroup}>
+                      <label htmlFor="speakerTitle">Speaker Title</label>
+                      <input
+                        type="text"
+                        id="speakerTitle"
+                        value={formData.speaker.title}
+                        onChange={(e) => handleSpeakerChange('title', e.target.value)}
+                        placeholder="Speaker title"
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label htmlFor="speakerOrg">Organization</label>
+                      <input
+                        type="text"
+                        id="speakerOrg"
+                        value={formData.speaker.organization}
+                        onChange={(e) => handleSpeakerChange('organization', e.target.value)}
+                        placeholder="Organization"
+                      />
+                    </div>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="speakerBio">Speaker Bio</label>
+                    <textarea
+                      id="speakerBio"
+                      value={formData.speaker.bio}
+                      onChange={(e) => handleSpeakerChange('bio', e.target.value)}
+                      rows="2"
+                      placeholder="Speaker biography"
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Speaker Topics</label>
+                    <div className={styles.arrayInput}>
+                      <input
+                        type="text"
+                        value={newTopic}
+                        onChange={(e) => setNewTopic(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleTopicAdd())}
+                        placeholder="Add topic"
+                      />
                       <button
                         type="button"
-                        onClick={() => handleTopicRemove(index)}
-                        className={styles.btnRemove}
+                        onClick={handleTopicAdd}
+                        className={styles.btnAdd}
                       >
-                        ×
+                        Add
                       </button>
                     </div>
-                  ))}
+                    <div className={styles.arrayList}>
+                      {formData.speaker.topics.map((topic, index) => (
+                        <div key={index} className={styles.arrayItem}>
+                          <span>{topic}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleTopicRemove(index)}
+                            className={styles.btnRemove}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <div className={styles.formGroup}>
-              <label>Tags</label>
-              <div className={styles.arrayInput}>
-                <input
-                  type="text"
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleTagAdd())}
-                  placeholder="Add tag"
-                />
-                <button
-                  type="button"
-                  onClick={handleTagAdd}
-                  className={styles.btnAdd}
-                >
-                  Add
-                </button>
-              </div>
-              <div className={styles.arrayList}>
-                {formData.tags.map((tag, index) => (
-                  <div key={index} className={styles.arrayItem}>
-                    <span>{tag}</span>
+                <div className={styles.formGroup}>
+                  <label>Tags</label>
+                  <div className={styles.arrayInput}>
+                    <input
+                      type="text"
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleTagAdd())}
+                      placeholder="Add tag"
+                    />
                     <button
                       type="button"
-                      onClick={() => handleTagRemove(index)}
-                      className={styles.btnRemove}
+                      onClick={handleTagAdd}
+                      className={styles.btnAdd}
                     >
-                      ×
+                      Add
                     </button>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className={styles.arrayList}>
+                    {formData.tags.map((tag, index) => (
+                      <div key={index} className={styles.arrayItem}>
+                        <span>{tag}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleTagRemove(index)}
+                          className={styles.btnRemove}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </form>
         </div>
         <div className={styles.modalFooter}>

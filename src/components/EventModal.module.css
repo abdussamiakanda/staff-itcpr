@@ -136,6 +136,10 @@
   margin-bottom: var(--spacing-lg);
 }
 
+.formGroup:has(.checkboxLabel) {
+  margin-bottom: var(--spacing-md);
+}
+
 .formRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -148,6 +152,35 @@
   font-weight: 500;
   color: var(--text-dark);
   font-size: 0.875rem;
+}
+
+.checkboxLabel {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px;
+  cursor: pointer !important;
+  margin-bottom: 0;
+  padding: 0 !important;
+  margin-top: 0;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--primary);
+  flex-shrink: 0;
+}
+
+.checkboxLabel span {
+  font-weight: 500;
+  color: var(--text-dark);
+  font-size: 0.875rem;
+  user-select: none;
+  line-height: 1.5;
+  margin: 0;
+  display: inline-block;
 }
 
 .required {

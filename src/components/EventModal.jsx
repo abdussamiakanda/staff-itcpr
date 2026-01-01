@@ -8,6 +8,7 @@ const EventModal = ({ event, onClose, onSave }) => {
     subtitle: '',
     type: 'Seminar',
     status: 'Upcoming',
+    published: false,
     date: '',
     time: '',
     location: '',
@@ -39,6 +40,7 @@ const EventModal = ({ event, onClose, onSave }) => {
         subtitle: event.subtitle || '',
         type: event.type || 'Seminar',
         status: event.status || 'Upcoming',
+        published: event.published ?? false,
         date: event.date || '',
         time: event.time || '',
         location: event.location || '',
@@ -64,10 +66,10 @@ const EventModal = ({ event, onClose, onSave }) => {
   }, [event]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -186,6 +188,19 @@ const EventModal = ({ event, onClose, onSave }) => {
                     <option value="Completed">Completed</option>
                   </select>
                 </div>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="published" className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    id="published"
+                    name="published"
+                    checked={formData.published}
+                    onChange={handleChange}
+                  />
+                  <span>Published</span>
+                </label>
               </div>
             </div>
 

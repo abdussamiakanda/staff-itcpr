@@ -9,8 +9,9 @@ import GalleryModal from '../components/GalleryModal';
 import styles from './EventDetail.module.css';
 
 // Helper function to parse time string and convert to Date object
+// Returns null if parsing fails (instead of Date(0) to distinguish from valid dates)
 const parseScheduleTime = (timeString, eventDate) => {
-  if (!timeString) return new Date(0); // Return epoch if missing
+  if (!timeString) return null; // Return null if missing
   
   // Check if timeString already contains full date/time format
   // Format: "Sunday, February 9, 2025, 10:00 PM"
@@ -27,25 +28,136 @@ const parseScheduleTime = (timeString, eventDate) => {
     // Extract start time (before " - " if it's a range)
     const startTime = timeString.split(' - ')[0].trim();
     
-    // Combine event date with time
-    const dateTimeString = `${eventDate} ${startTime}`;
+    // Try multiple parsing strategies
+    let parsedDate;
     
-    // Try to parse the date
-    const parsedDate = new Date(dateTimeString);
+    // Strategy 1: Direct combination
+    const dateTimeString1 = `${eventDate} ${startTime}`;
+    parsedDate = new Date(dateTimeString1);
+    if (!isNaN(parsedDate.getTime())) {
+      return parsedDate;
+    }
     
-    // If parsing fails, return epoch
-    return isNaN(parsedDate.getTime()) ? new Date(0) : parsedDate;
+    // Strategy 2: With T separator (ISO-like)
+    const dateTimeString2 = `${eventDate}T${startTime}`;
+    parsedDate = new Date(dateTimeString2);
+    if (!isNaN(parsedDate.getTime())) {
+      return parsedDate;
+    }
+    
+    // Strategy 3: Parse eventDate first, then add time
+    const baseDate = new Date(eventDate);
+    if (!isNaN(baseDate.getTime())) {
+      // Try to extract hours and minutes from time string
+      const timeMatch = startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (timeMatch) {
+        let hours = parseInt(timeMatch[1], 10);
+        const minutes = parseInt(timeMatch[2], 10);
+        const ampm = timeMatch[3].toUpperCase();
+        
+        // Convert to 24-hour format
+        if (ampm === 'PM' && hours !== 12) {
+          hours += 12;
+        } else if (ampm === 'AM' && hours === 12) {
+          hours = 0;
+        }
+        
+        const dateWithTime = new Date(baseDate);
+        dateWithTime.setHours(hours, minutes, 0, 0);
+        return dateWithTime;
+      }
+      
+      // Strategy 4: Try parsing with different formats
+      const timeMatch24 = startTime.match(/(\d{1,2}):(\d{2})/);
+      if (timeMatch24) {
+        const hours = parseInt(timeMatch24[1], 10);
+        const minutes = parseInt(timeMatch24[2], 10);
+        const dateWithTime = new Date(baseDate);
+        dateWithTime.setHours(hours, minutes, 0, 0);
+        return dateWithTime;
+      }
+    }
+    
+    // If all strategies fail, return null
+    return null;
   }
   
-  // If no eventDate and can't parse, return epoch
-  return new Date(0);
+  // If no eventDate and can't parse, return null
+  return null;
+};
+
+// Helper function to extract numeric time value for sorting
+// Converts time string like "10:00 AM" to minutes since midnight for comparison
+const extractTimeValue = (timeString) => {
+  if (!timeString) return 0;
+  
+  // Extract start time (before " - " if it's a range)
+  let startTime = timeString.split(' - ')[0].trim();
+  
+  // Normalize time format: replace period with colon (e.g., "11.15 AM" -> "11:15 AM")
+  startTime = startTime.replace(/\./g, ':');
+  
+  // Normalize spacing: ensure space before AM/PM (e.g., "1:PM" -> "1:00 PM")
+  startTime = startTime.replace(/(\d)(AM|PM)/i, '$1 $2');
+  
+  // Try to extract hours and minutes with AM/PM
+  // Match patterns like "10:00 AM", "11:15 AM", "12:30 PM", "1:00 PM"
+  const timeMatch = startTime.match(/(\d{1,2}):?(\d{0,2})\s*(AM|PM)/i);
+  if (timeMatch) {
+    let hours = parseInt(timeMatch[1], 10);
+    let minutes = parseInt(timeMatch[2] || '0', 10); // Default to 0 if minutes missing
+    
+    // If minutes are missing but we have a colon, assume 00
+    if (isNaN(minutes) || minutes === 0) {
+      minutes = 0;
+    }
+    
+    const ampm = timeMatch[3].toUpperCase();
+    
+    // Convert to 24-hour format
+    if (ampm === 'PM' && hours !== 12) {
+      hours += 12;
+    } else if (ampm === 'AM' && hours === 12) {
+      hours = 0;
+    }
+    
+    return hours * 60 + minutes; // Return minutes since midnight
+  }
+  
+  // Try 24-hour format (e.g., "14:30")
+  const timeMatch24 = startTime.match(/(\d{1,2}):(\d{2})/);
+  if (timeMatch24) {
+    const hours = parseInt(timeMatch24[1], 10);
+    const minutes = parseInt(timeMatch24[2], 10);
+    return hours * 60 + minutes;
+  }
+  
+  return 0;
 };
 
 // Helper function to sort schedule items by date/time
 const sortScheduleByDateTime = (a, b, eventDate) => {
   const dateA = parseScheduleTime(a.time, eventDate);
   const dateB = parseScheduleTime(b.time, eventDate);
-  return dateB - dateA; // Descending order (newest first)
+  
+  // If both dates are valid, sort by date (ascending - earliest first)
+  if (dateA !== null && dateB !== null) {
+    return dateA - dateB; // Ascending order (earliest first)
+  }
+  
+  // For all other cases, use time value comparison
+  // This ensures break items and other items sort correctly by time
+  const timeValueA = extractTimeValue(a.time);
+  const timeValueB = extractTimeValue(b.time);
+  
+  if (timeValueA !== timeValueB) {
+    return timeValueA - timeValueB; // Ascending order (earliest times first)
+  }
+  
+  // If time values are the same, fallback to string comparison
+  const timeA = a.time || '';
+  const timeB = b.time || '';
+  return timeA.localeCompare(timeB); // Ascending order
 };
 
 const EventDetail = () => {
@@ -585,7 +697,7 @@ const EventDetail = () => {
                         )}
                         <span className={styles.scheduleTitle}>{item.title}</span>
                       </div>
-                      {(item.type || item.level || item.room) && (
+                      {item.type !== 'Break' && (item.type || item.level || item.room) && (
                         <div className={styles.scheduleTags}>
                           {item.type && <span className={styles.scheduleTag}>{item.type}</span>}
                           {item.level && <span className={styles.scheduleTag}>{item.level}</span>}
@@ -618,7 +730,7 @@ const EventDetail = () => {
                     </div>
                   </div>
                   {item.description && <p className={styles.scheduleDescription}>{item.description}</p>}
-                  {item.speaker?.name && (
+                  {item.type !== 'Break' && item.speaker?.name && (
                     <div className={styles.speakerInfo}>
                       <div className={styles.speakerHeader}>
                         <strong>Speaker:</strong> {item.speaker.name}
@@ -639,7 +751,7 @@ const EventDetail = () => {
                       )}
                     </div>
                   )}
-                  {item.tags && item.tags.length > 0 && (
+                  {item.type !== 'Break' && item.tags && item.tags.length > 0 && (
                     <div className={styles.scheduleTagsSection}>
                       <strong>Tags:</strong>
                       <div className={styles.tagsList}>
