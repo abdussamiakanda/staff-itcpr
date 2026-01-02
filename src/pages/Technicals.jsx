@@ -11,6 +11,8 @@ const Technicals = () => {
   const [syncStatus, setSyncStatus] = useState('');
   const [cleaning, setCleaning] = useState(false);
   const [cleanStatus, setCleanStatus] = useState('');
+  const [updating, setUpdating] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState('');
 
   const syncUsersToRealtimeDB = async () => {
     setSyncing(true);
@@ -299,6 +301,65 @@ const Technicals = () => {
     }
   };
 
+  const updateAccessCodeJson = async () => {
+    setUpdating(true);
+    setUpdateStatus('Starting access code update...');
+
+    try {
+      // Get all users from Firestore
+      const usersRef = collection(db, 'users');
+      const usersSnapshot = await getDocs(usersRef);
+      const accessCodes = {};
+
+      setUpdateStatus('Processing users from Firestore...');
+
+      usersSnapshot.docs.forEach(doc => {
+        const serverUserData = doc.data();
+        const userName = serverUserData.name;
+        const ip = serverUserData.ip;
+        const ssh_folder = serverUserData.ssh_folder;
+
+        if (serverUserData.serverCode && ip) {
+          accessCodes[serverUserData.serverCode] = {
+            name: userName,
+            ip: ip,
+            ssh_folder: ssh_folder
+          };
+        }
+      });
+
+      const codeCount = Object.keys(accessCodes).length;
+      setUpdateStatus(`Found ${codeCount} access codes. Uploading to server...`);
+
+      const jsonString = JSON.stringify(accessCodes, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const formData = new FormData();
+      formData.append('file', blob, 'access_codes.json');
+
+      const API_ACCESS_URL = import.meta.env.VITE_API_ACCESS_URL;
+      if (!API_ACCESS_URL) {
+        throw new Error('VITE_API_ACCESS_URL is not defined in environment variables');
+      }
+
+      const response = await fetch(API_ACCESS_URL, {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        setUpdateStatus(`✓ Access codes uploaded successfully! Processed ${codeCount} access codes.`);
+      } else {
+        throw new Error(result.error || 'Upload failed');
+      }
+    } catch (error) {
+      console.error('Error updating access codes:', error);
+      setUpdateStatus(`✗ Error: ${error.message || 'Unknown error occurred'}`);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   return (
     <div className="container">
       <section className={styles.technicalsSection}>
@@ -370,6 +431,38 @@ const Technicals = () => {
             {cleanStatus && (
               <div className={`${styles.syncStatus} ${cleanStatus.startsWith('✓') ? styles.success : cleanStatus.startsWith('✗') ? styles.error : styles.info}`}>
                 {cleanStatus}
+              </div>
+            )}
+          </div>
+
+          <div className={styles.syncCard}>
+            <div className={styles.syncHeader}>
+              <span className="material-icons">code</span>
+              <h3>Update Access Codes</h3>
+            </div>
+            <p className={styles.syncDescription}>
+              Generate and upload access_codes.json file to the server. This file contains server access codes mapped to user information (name, IP, SSH folder) from Firestore users.
+            </p>
+            <button
+              className={styles.syncButton}
+              onClick={updateAccessCodeJson}
+              disabled={updating}
+            >
+              {updating ? (
+                <>
+                  <span className="material-icons">hourglass_empty</span>
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <span className="material-icons">code</span>
+                  Update Access Codes
+                </>
+              )}
+            </button>
+            {updateStatus && (
+              <div className={`${styles.syncStatus} ${updateStatus.startsWith('✓') ? styles.success : updateStatus.startsWith('✗') ? styles.error : styles.info}`}>
+                {updateStatus}
               </div>
             )}
           </div>
