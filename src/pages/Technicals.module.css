@@ -45,10 +45,11 @@
 }
 
 .syncSection {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: var(--spacing-xl);
   margin-top: var(--spacing-xl);
+  align-items: flex-start;
 }
 
 .syncCard {
@@ -190,7 +191,9 @@
 
 @media (max-width: 768px) {
   .syncSection {
+    grid-template-columns: 1fr;
     margin-top: var(--spacing-lg);
+    gap: var(--spacing-lg);
   }
 
   .syncCard {

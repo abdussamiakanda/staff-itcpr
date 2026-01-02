@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { collection, getDocs, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { ref, set, get, remove } from 'firebase/database';
-import { db, database } from '../config/firebase';
+import { db, database, auth } from '../config/firebase';
+import { useAuth } from '../hooks/useAuth';
 import styles from './Technicals.module.css';
 
 const Technicals = () => {
+  const { user, userData } = useAuth();
   const [syncing, setSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState('');
+  const [cleaning, setCleaning] = useState(false);
+  const [cleanStatus, setCleanStatus] = useState('');
 
   const syncUsersToRealtimeDB = async () => {
     setSyncing(true);
@@ -216,6 +220,85 @@ const Technicals = () => {
     }
   };
 
+  const cleanupWebmail = async () => {
+    setCleaning(true);
+    setCleanStatus('Starting webmail cleanup...');
+
+    try {
+      // Get all users from Firestore
+      const usersRef = collection(db, 'users');
+      const querySnapshot = await getDocs(usersRef);
+
+      // Create a Set of all valid user UIDs from Firestore
+      const validUserIds = new Set();
+      
+      for (const userDoc of querySnapshot.docs) {
+        const userData = userDoc.data();
+        const uid = userDoc.id;
+        
+        // Only include users with meaningful data
+        if (userData && (userData.email || userData.name || userData.role || userData.group)) {
+          validUserIds.add(uid);
+        }
+      }
+
+      setCleanStatus(`Found ${validUserIds.size} valid users in Firestore. Checking Realtime Database emails...`);
+
+      // Get all email entries from Realtime Database
+      const emailsRef = ref(database, 'emails');
+      const emailsSnapshot = await get(emailsRef);
+
+      if (!emailsSnapshot.exists()) {
+        setCleanStatus('No email entries found in Realtime Database.');
+        setCleaning(false);
+        return;
+      }
+
+      const emails = emailsSnapshot.val();
+      const emailUserIds = Object.keys(emails);
+
+      let processedCount = 0;
+      let removedCount = 0;
+      let errorCount = 0;
+
+      // Process each email entry
+      for (const uid of emailUserIds) {
+        try {
+          processedCount++;
+          setCleanStatus(`Checking ${processedCount}/${emailUserIds.length} email entries...`);
+
+          // Check if this UID exists in valid Firestore users
+          if (!validUserIds.has(uid)) {
+            // User doesn't exist in Firestore, remove from emails
+            const emailRef = ref(database, `emails/${uid}`);
+            await remove(emailRef);
+            removedCount++;
+          }
+        } catch (error) {
+          console.error(`Error processing email entry ${uid}:`, error);
+          errorCount++;
+          // Continue with next entry even if one fails
+        }
+      }
+
+      // Final status update
+      if (errorCount === 0) {
+        setCleanStatus(`✓ Cleanup Complete! Processed: ${processedCount} email entries, Removed: ${removedCount} entries that don't have matching users in Firestore.`);
+      } else {
+        setCleanStatus(`⚠ Cleanup Complete! Processed: ${processedCount} email entries, Removed: ${removedCount} entries. Errors: ${errorCount}.`);
+      }
+    } catch (error) {
+      console.error('Error cleaning up webmail:', error);
+      if (error.message && error.message.includes('PERMISSION_DENIED')) {
+        setCleanStatus(`✗ Permission Denied: Please check Firebase Realtime Database security rules to allow writes to /emails/ path.`);
+      } else {
+        setCleanStatus(`✗ Error: ${error.message || 'Unknown error occurred'}`);
+      }
+    } finally {
+      setCleaning(false);
+    }
+  };
+
   return (
     <div className="container">
       <section className={styles.technicalsSection}>
@@ -255,6 +338,38 @@ const Technicals = () => {
             {syncStatus && (
               <div className={`${styles.syncStatus} ${syncStatus.startsWith('✓') ? styles.success : syncStatus.startsWith('✗') ? styles.error : styles.info}`}>
                 {syncStatus}
+              </div>
+            )}
+          </div>
+
+          <div className={styles.syncCard}>
+            <div className={styles.syncHeader}>
+              <span className="material-icons">email</span>
+              <h3>Webmail Cleanup</h3>
+            </div>
+            <p className={styles.syncDescription}>
+              Check email entries in Firebase Realtime Database and remove entries that don't have a corresponding user in Firestore. This ensures webmail data consistency.
+            </p>
+            <button
+              className={styles.syncButton}
+              onClick={cleanupWebmail}
+              disabled={cleaning}
+            >
+              {cleaning ? (
+                <>
+                  <span className="material-icons">hourglass_empty</span>
+                  Cleaning...
+                </>
+              ) : (
+                <>
+                  <span className="material-icons">email</span>
+                  Cleanup Webmail
+                </>
+              )}
+            </button>
+            {cleanStatus && (
+              <div className={`${styles.syncStatus} ${cleanStatus.startsWith('✓') ? styles.success : cleanStatus.startsWith('✗') ? styles.error : styles.info}`}>
+                {cleanStatus}
               </div>
             )}
           </div>
