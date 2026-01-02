@@ -1,7 +1,52 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
 import styles from './UserDetailsModal.module.css';
 
 const UserDetailsModal = ({ user, onClose, onTerminate, onChangeStatus, capitalize, formatDate, terminating, changingStatus }) => {
+  const [terminatedByName, setTerminatedByName] = useState(null);
+  const [loadingTerminatedBy, setLoadingTerminatedBy] = useState(false);
+
+  useEffect(() => {
+    const fetchTerminatedByName = async () => {
+      if (!user.terminatedBy) {
+        setTerminatedByName(null);
+        return;
+      }
+
+      setLoadingTerminatedBy(true);
+      try {
+        // First try to get from active users
+        const userRef = doc(db, 'users', user.terminatedBy);
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          setTerminatedByName(userData.name || user.terminatedBy);
+        } else {
+          // If not in active users, try terminated_users
+          const terminatedUserRef = doc(db, 'terminated_users', user.terminatedBy);
+          const terminatedUserSnap = await getDoc(terminatedUserRef);
+          
+          if (terminatedUserSnap.exists()) {
+            const userData = terminatedUserSnap.data();
+            setTerminatedByName(userData.name || user.terminatedBy);
+          } else {
+            // If user not found, show UID
+            setTerminatedByName(user.terminatedBy);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching terminated by user:', error);
+        setTerminatedByName(user.terminatedBy);
+      } finally {
+        setLoadingTerminatedBy(false);
+      }
+    };
+
+    fetchTerminatedByName();
+  }, [user.terminatedBy]);
+
   const getInitials = (name) => {
     if (!name) return '?';
     const parts = name.trim().split(/\s+/);
@@ -78,7 +123,9 @@ const UserDetailsModal = ({ user, onClose, onTerminate, onChangeStatus, capitali
                   {user.terminatedBy && (
                     <div className={styles.detailItem}>
                       <label>Terminated By:</label>
-                      <span>{user.terminatedBy}</span>
+                      <span>
+                        {loadingTerminatedBy ? 'Loading...' : (terminatedByName || user.terminatedBy)}
+                      </span>
                     </div>
                   )}
                 </>

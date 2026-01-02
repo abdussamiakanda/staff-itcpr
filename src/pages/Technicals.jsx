@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
-import { ref, set } from 'firebase/database';
+import { collection, getDocs, doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { ref, set, get, remove } from 'firebase/database';
 import { db, database } from '../config/firebase';
 import styles from './Technicals.module.css';
 
@@ -62,11 +62,147 @@ const Technicals = () => {
         }
       }
 
-      // Final status update
+      // Final status update for sync
       if (errorCount === 0) {
-        setSyncStatus(`✓ Sync Complete! Processed: ${processedCount} users, Updated: ${updatedCount} users. All user types have been synchronized to Firebase Realtime Database.`);
+        setSyncStatus(`✓ Sync Complete! Processed: ${processedCount} users, Updated: ${updatedCount} users. Starting cleanup...`);
       } else {
-        setSyncStatus(`⚠ Sync Complete! Processed: ${processedCount} users, Updated: ${updatedCount} users, Errors: ${errorCount} users. ${errorCount > 0 ? 'Check Firebase Realtime Database security rules.' : ''}`);
+        setSyncStatus(`⚠ Sync Complete! Processed: ${processedCount} users, Updated: ${updatedCount} users, Errors: ${errorCount} users. Starting cleanup...`);
+      }
+
+      // Now clean up users in Realtime DB that don't exist in Firestore
+      // Also clean up empty user documents from Firestore
+      setSyncStatus('Cleaning up Realtime Database and Firestore...');
+
+      try {
+        // Get all users from Realtime DB
+        const usersRef = ref(database, 'users');
+        const snapshot = await get(usersRef);
+
+        let cleanedCount = 0;
+        let firestoreDeletedCount = 0;
+        let cleanErrorCount = 0;
+
+        if (snapshot.exists()) {
+          const realtimeUsers = snapshot.val();
+          const userIds = Object.keys(realtimeUsers);
+
+          // Process each user in Realtime DB
+          for (const uid of userIds) {
+            try {
+              let shouldKeep = false;
+
+              // Check if user exists in Firestore (users collection)
+              const userRef = doc(db, 'users', uid);
+              const userSnap = await getDoc(userRef);
+
+              if (userSnap.exists()) {
+                const userData = userSnap.data();
+                // Check if document has meaningful data (not just empty or subcollections)
+                // A valid user should have at least one of: email, name, role, or group
+                if (userData && (userData.email || userData.name || userData.role || userData.group)) {
+                  // User exists in Firestore with valid data, keep in Realtime DB
+                  shouldKeep = true;
+                } else {
+                  // Document exists but has no meaningful data, remove from both Firestore and Realtime DB
+                  await deleteDoc(userRef);
+                  firestoreDeletedCount++;
+                  const userRealtimeRef = ref(database, `users/${uid}`);
+                  await remove(userRealtimeRef);
+                  cleanedCount++;
+                  continue; // Skip to next user
+                }
+              }
+
+              // Check if user exists in terminated_users collection
+              // Terminated users should NOT exist in Realtime DB, so we don't set shouldKeep = true
+              const terminatedUserRef = doc(db, 'terminated_users', uid);
+              const terminatedUserSnap = await getDoc(terminatedUserRef);
+
+              if (terminatedUserSnap.exists()) {
+                // User is terminated, remove from Realtime DB
+                const userRealtimeRef = ref(database, `users/${uid}`);
+                await remove(userRealtimeRef);
+                cleanedCount++;
+                continue; // Skip to next user
+              }
+
+              // If user doesn't exist or has no meaningful data, remove from Realtime DB
+              if (!shouldKeep) {
+                const userRealtimeRef = ref(database, `users/${uid}`);
+                await remove(userRealtimeRef);
+                cleanedCount++;
+              }
+            } catch (error) {
+              console.error(`Error processing user ${uid} during cleanup:`, error);
+              cleanErrorCount++;
+              // Continue with next user even if one fails
+            }
+          }
+        }
+
+        // Also check all Firestore users for empty documents
+        setSyncStatus('Checking Firestore for empty user documents...');
+        const firestoreUsersRef = collection(db, 'users');
+        const firestoreSnapshot = await getDocs(firestoreUsersRef);
+
+        for (const userDoc of firestoreSnapshot.docs) {
+          try {
+            const userData = userDoc.data();
+            const uid = userDoc.id;
+
+            // Check if document has meaningful data
+            if (!userData || !(userData.email || userData.name || userData.role || userData.group)) {
+              // Empty document, delete from Firestore
+              await deleteDoc(doc(db, 'users', uid));
+              firestoreDeletedCount++;
+
+              // Also remove from Realtime DB if it exists there
+              try {
+                const userRealtimeRef = ref(database, `users/${uid}`);
+                const realtimeSnap = await get(userRealtimeRef);
+                if (realtimeSnap.exists()) {
+                  await remove(userRealtimeRef);
+                  cleanedCount++;
+                }
+              } catch (rtError) {
+                // Ignore errors if user doesn't exist in Realtime DB
+              }
+            }
+          } catch (error) {
+            console.error(`Error checking Firestore user ${userDoc.id}:`, error);
+            cleanErrorCount++;
+          }
+        }
+
+        // Final status update
+        if (errorCount === 0 && cleanErrorCount === 0) {
+          let statusMsg = `✓ Complete! Synced: ${updatedCount} users`;
+          if (cleanedCount > 0 || firestoreDeletedCount > 0) {
+            statusMsg += `, Removed: ${cleanedCount} users from Realtime Database`;
+            if (firestoreDeletedCount > 0) {
+              statusMsg += `, Deleted: ${firestoreDeletedCount} empty users from Firestore`;
+            }
+          }
+          statusMsg += `. All user types have been synchronized and cleanup completed.`;
+          setSyncStatus(statusMsg);
+        } else {
+          let statusMsg = `⚠ Complete! Synced: ${updatedCount} users`;
+          if (cleanedCount > 0 || firestoreDeletedCount > 0) {
+            statusMsg += `, Removed: ${cleanedCount} users from Realtime Database`;
+            if (firestoreDeletedCount > 0) {
+              statusMsg += `, Deleted: ${firestoreDeletedCount} empty users from Firestore`;
+            }
+          }
+          statusMsg += `. Sync Errors: ${errorCount}, Cleanup Errors: ${cleanErrorCount}.`;
+          setSyncStatus(statusMsg);
+        }
+      } catch (cleanError) {
+        console.error('Error during cleanup:', cleanError);
+        if (cleanError.message && cleanError.message.includes('PERMISSION_DENIED')) {
+          setSyncStatus(`⚠ Sync Complete! Cleanup failed: Permission Denied. Please check Firebase Realtime Database security rules.`);
+        } else {
+          setSyncStatus(`⚠ Sync Complete! Cleanup failed: ${cleanError.message || 'Unknown error occurred'}`);
+        }
       }
     } catch (error) {
       console.error('Error syncing users:', error);
@@ -97,7 +233,7 @@ const Technicals = () => {
               <h3>User Data Synchronization</h3>
             </div>
             <p className={styles.syncDescription}>
-              Sync user data from Firestore to Firebase Realtime Database. This ensures that user information is available in both databases for different use cases.
+              Sync user data from Firestore to Firebase Realtime Database and remove users from Realtime Database that no longer exist in Firestore. This ensures data consistency between both databases.
             </p>
             <button
               className={styles.syncButton}

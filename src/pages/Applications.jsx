@@ -451,7 +451,8 @@ const Applications = () => {
         <li>Visit the portal: https://portal.itcpr.org</li>
         <li>Log in using the email and temporary password above</li>
         <li>After logging in, you will be prompted to join our Discord server</li>
-        <li>Click Join button and join the server</li>
+        <li>Create a new account on Discord with your gmail address, if you don't have one already</li>
+        <li>Click Join button on the portal and join the server</li>
         <li>Download Discord desktop app and the mobile app to join the server</li>
         <li>Click on the person icon on the top right corner in the portal.</li>
         <li>Click on change password, and change your password immediately</li>
