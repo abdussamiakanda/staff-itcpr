@@ -165,26 +165,43 @@ const PublicationModal = ({ publication, onClose, onSave }) => {
               />
             </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="group">Group <span className={styles.required}>*</span></label>
-              <select
-                id="group"
-                name="group"
-                value={formData.group}
-                onChange={handleChange}
-                required
-              >
-                <option value="" disabled>Select Group</option>
-                {loadingGroups ? (
-                  <option value="" disabled>Loading groups...</option>
-                ) : (
-                  groups.map(group => (
-                    <option key={group.id} value={group.name}>
-                      {group.displayName}
-                    </option>
-                  ))
-                )}
-              </select>
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label htmlFor="group">Group <span className={styles.required}>*</span></label>
+                <select
+                  id="group"
+                  name="group"
+                  value={formData.group}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="" disabled>Select Group</option>
+                  {loadingGroups ? (
+                    <option value="" disabled>Loading groups...</option>
+                  ) : (
+                    groups.map(group => (
+                      <option key={group.id} value={group.name}>
+                        {group.displayName}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="type">Publication Type <span className={styles.required}>*</span></label>
+                <select
+                  id="type"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="" disabled>Select Type</option>
+                  {publicationTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className={styles.formRow}>
@@ -217,22 +234,6 @@ const PublicationModal = ({ publication, onClose, onSave }) => {
                   placeholder={currentYear.toString()}
                 />
               </div>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="type">Publication Type <span className={styles.required}>*</span></label>
-              <select
-                id="type"
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-                required
-              >
-                <option value="" disabled>Select Type</option>
-                {publicationTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
             </div>
 
             <div className={styles.formGroup}>

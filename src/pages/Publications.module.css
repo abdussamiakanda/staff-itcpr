@@ -97,11 +97,80 @@
   margin-bottom: var(--spacing-lg);
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   padding: var(--spacing-lg);
   background: var(--bg-main);
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid var(--border-color);
+}
+
+.filtersLeft {
+  display: flex;
+  gap: var(--spacing-md);
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.viewToggle {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  background: var(--bg-light);
+  padding: 4px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.viewToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 10px 20px;
+  border: none;
+  background: transparent;
+  color: var(--text-medium);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+}
+
+.viewToggleBtn:hover {
+  color: var(--primary);
+  background: rgba(157, 157, 189, 0.1);
+}
+
+.viewToggleBtnActive {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 10px 20px;
+  border: none;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(157, 157, 189, 0.3);
+  font-family: inherit;
+}
+
+.viewToggleBtnActive:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(157, 157, 189, 0.4);
+}
+
+.viewToggleBtn .material-icons,
+.viewToggleBtnActive .material-icons {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .searchBox {
@@ -316,23 +385,38 @@
   color: var(--text-dark);
 }
 
-.doiLink {
-  color: var(--primary);
-  text-decoration: none;
+.readMoreContainer {
+  margin-top: var(--spacing-sm);
+}
+
+.readMoreBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: 4px var(--spacing-sm);
+  font-size: 0.875rem;
   font-weight: 500;
-  font-size: 0.9375rem;
-  display: inline;
+  border-radius: var(--border-radius-sm, 8px);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
   transition: all 0.2s ease;
-  margin-left: 0;
+  background: transparent;
+  color: var(--text-dark);
+  font-family: inherit;
+  line-height: 1.5;
 }
 
-.doiLink:hover {
-  color: var(--primary-dark);
-  text-decoration: underline;
-}
-
-.doiLink:visited {
+.readMoreBtn:hover {
+  background: var(--bg-light);
+  border-color: var(--primary);
   color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.readMoreBtn :global(.material-icons) {
+  font-size: 18px !important;
+  line-height: 1;
 }
 
 .loadingState {
@@ -377,30 +461,47 @@
 
 .emptyState {
   text-align: center;
-  padding: 100px 20px;
+  padding: 80px 20px;
   color: var(--text-medium);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-.emptyState .material-icons {
-  font-size: 80px;
-  color: var(--border-color);
-  margin-bottom: 32px;
-  opacity: 0.6;
+.emptyStateIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--primary-lighter);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--spacing-lg);
+  border: none;
+}
+
+.emptyStateIcon .material-icons {
+  font-size: 48px;
+  color: var(--primary);
+  opacity: 0.7;
 }
 
 .emptyState h3 {
-  font-size: 1.875rem;
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 600;
   color: var(--text-dark);
-  margin-bottom: 16px;
-  letter-spacing: -0.02em;
+  margin-bottom: var(--spacing-sm);
+  letter-spacing: -0.01em;
 }
 
 .emptyState p {
-  font-size: 1.125rem;
-  margin-bottom: 32px;
+  font-size: 1rem;
+  margin: 0;
   color: var(--text-medium);
-  font-weight: 500;
+  font-weight: 400;
+  max-width: 500px;
+  line-height: 1.6;
 }
 
 @media (max-width: 768px) {
@@ -416,6 +517,18 @@
   .filtersContainer {
     flex-direction: column;
     padding: var(--spacing-md);
+    gap: var(--spacing-md);
+  }
+
+  .filtersLeft {
+    width: 100%;
+    flex: none;
+  }
+
+  .viewToggle {
+    width: 100%;
+    margin-left: 0;
+    justify-content: center;
   }
 
   .searchBox {
@@ -440,6 +553,73 @@
   .publicationActions {
     align-self: flex-end;
   }
+
+  /* Project Publications Mobile Styles */
+  .publicationStatus {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+  }
+
+  .publicationAuthor {
+    font-size: 0.813rem;
+    margin-top: var(--spacing-xs);
+  }
+
+  .projectPubTitle {
+    font-size: 1rem;
+  }
+
+  .projectPubDetail {
+    font-size: 0.813rem;
+  }
+
+  .projectPubNotes {
+    font-size: 0.813rem;
+  }
+}
+
+/* Project Publications Styles */
+.publicationStatus {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  flex-shrink: 0;
+}
+
+.projectPubTitle {
+  margin: 0 0 8px 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.projectPubDetail {
+  margin: 0 0 8px 0;
+  color: var(--text-medium);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.projectPubDetail strong {
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.projectPubNotes {
+  margin: 8px 0 0 0;
+  color: var(--text-medium);
+  font-size: 0.875rem;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.publicationAuthor {
+  color: var(--text-medium);
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 @media (max-width: 480px) {
@@ -448,6 +628,49 @@
   }
 
   .publicationContent {
+    font-size: 0.875rem;
+  }
+
+  .projectPubTitle {
+    font-size: 1rem;
+  }
+
+  .projectPubDetail {
+    font-size: 0.75rem;
+  }
+
+  .publicationStatus {
+    font-size: 0.65rem;
+    padding: 4px 8px;
+  }
+
+  .publicationAuthor {
+    font-size: 0.75rem;
+  }
+
+  .projectPubNotes {
+    font-size: 0.75rem;
+  }
+
+  .emptyState {
+    padding: 60px 20px;
+  }
+
+  .emptyStateIcon {
+    width: 80px;
+    height: 80px;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .emptyStateIcon .material-icons {
+    font-size: 40px;
+  }
+
+  .emptyState h3 {
+    font-size: 1.25rem;
+  }
+
+  .emptyState p {
     font-size: 0.875rem;
   }
 }
