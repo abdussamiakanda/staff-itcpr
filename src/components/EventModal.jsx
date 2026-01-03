@@ -16,7 +16,6 @@ const EventModal = ({ event, onClose, onSave }) => {
     language: 'English',
     price: '',
     capacity: '',
-    currentEnrollment: '0',
     overview: '',
     learning_objectives: [],
     target_audience: [],
@@ -48,7 +47,6 @@ const EventModal = ({ event, onClose, onSave }) => {
         language: event.language || 'English',
         price: event.price?.toString() || '',
         capacity: event.capacity?.toString() || '',
-        currentEnrollment: event.currentEnrollment?.toString() || '0',
         overview: event.overview || '',
         learning_objectives: event.learning_objectives || [],
         target_audience: event.target_audience || [],
@@ -100,8 +98,7 @@ const EventModal = ({ event, onClose, onSave }) => {
     const eventData = {
       ...formData,
       price: formData.price ? parseFloat(formData.price) : null,
-      capacity: formData.capacity ? parseInt(formData.capacity) : null,
-      currentEnrollment: parseInt(formData.currentEnrollment) || 0
+      capacity: formData.capacity ? parseInt(formData.capacity) : null
     };
 
     onSave(eventData);
@@ -230,6 +227,9 @@ const EventModal = ({ event, onClose, onSave }) => {
                     onChange={handleChange}
                     placeholder="10:00 AM - 2:00 PM"
                   />
+                  <small style={{ color: '#666', fontSize: '0.85em', marginTop: '4px', display: 'block' }}>
+                    Default timezone: Asia/Dhaka
+                  </small>
                 </div>
               </div>
 
@@ -287,32 +287,17 @@ const EventModal = ({ event, onClose, onSave }) => {
                 </div>
               </div>
 
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label htmlFor="capacity">Capacity</label>
-                  <input
-                    type="number"
-                    id="capacity"
-                    name="capacity"
-                    value={formData.capacity}
-                    onChange={handleChange}
-                    min="1"
-                    placeholder="100"
-                  />
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label htmlFor="currentEnrollment">Current Enrollment</label>
-                  <input
-                    type="number"
-                    id="currentEnrollment"
-                    name="currentEnrollment"
-                    value={formData.currentEnrollment}
-                    onChange={handleChange}
-                    min="0"
-                    placeholder="0"
-                  />
-                </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="capacity">Capacity</label>
+                <input
+                  type="number"
+                  id="capacity"
+                  name="capacity"
+                  value={formData.capacity}
+                  onChange={handleChange}
+                  min="1"
+                  placeholder="100"
+                />
               </div>
             </div>
 

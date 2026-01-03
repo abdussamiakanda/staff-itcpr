@@ -161,19 +161,9 @@ const ScheduleItemModal = ({ scheduleItem, onClose, onSave }) => {
                   required
                   placeholder="10:00 AM - 10:45 AM"
                 />
-              </div>
-              <div className={styles.formGroup}>
-                <label htmlFor="timezone">Timezone</label>
-                <select
-                  id="timezone"
-                  name="timezone"
-                  value={formData.timezone}
-                  onChange={handleChange}
-                >
-                  <option value="Asia/Dhaka">Asia/Dhaka</option>
-                  <option value="America/Chicago">America/Chicago</option>
-                  <option value="America/New_York">America/New_York</option>
-                </select>
+                <small style={{ color: '#666', fontSize: '0.85em', marginTop: '4px', display: 'block' }}>
+                  Default timezone: Asia/Dhaka
+                </small>
               </div>
               <div className={styles.formGroup}>
                 <label htmlFor="title">Title <span className={styles.required}>*</span></label>

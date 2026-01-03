@@ -507,7 +507,8 @@ const EventDetail = () => {
         options.minute = '2-digit';
       }
       
-      return date.toLocaleString('en-US', options);
+      const formatted = date.toLocaleString('en-US', options);
+      return timeString ? `${formatted} (Asia/Dhaka)` : formatted;
     } catch {
       return dateString;
     }
@@ -586,7 +587,7 @@ const EventDetail = () => {
             {event.time && !event.date && (
               <span className={styles.metaItem}>
                 <span className={`material-icons ${styles.metaIcon}`}>schedule</span>
-                {event.time}
+                {event.time} <span style={{ fontSize: '0.85em', color: '#666', marginLeft: '4px' }}>(Asia/Dhaka)</span>
               </span>
             )}
             {event.language && (
@@ -599,12 +600,6 @@ const EventDetail = () => {
               <span className={styles.metaItem}>
                 <span className={`material-icons ${styles.metaIcon}`}>attach_money</span>
                 {event.price}
-              </span>
-            )}
-            {event.capacity && (
-              <span className={styles.metaItem}>
-                <span className={`material-icons ${styles.metaIcon}`}>people</span>
-                {event.currentEnrollment || 0} / {event.capacity}
               </span>
             )}
           </div>
@@ -690,11 +685,9 @@ const EventDetail = () => {
                     <div>
                       <div className={styles.scheduleTimeTitle}>
                         <strong>{item.time}</strong>
-                        {item.timezone && (
-                          <span className={styles.timezoneTag}>
-                            {item.timezone}
-                          </span>
-                        )}
+                        <span className={styles.timezoneTag}>
+                          Asia/Dhaka
+                        </span>
                         <span className={styles.scheduleTitle}>{item.title}</span>
                       </div>
                       {item.type !== 'Break' && (item.type || item.level || item.room) && (

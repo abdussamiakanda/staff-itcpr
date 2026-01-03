@@ -11,19 +11,58 @@ const Emails = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [subscribers, setSubscribers] = useState([]);
+  const [subscriberSubgroups, setSubscriberSubgroups] = useState([]);
   const [formData, setFormData] = useState({
     emailList: '',
     subject: '',
     body: '',
     emailTo: '',
-    emailName: ''
+    emailName: '',
+    subscriberSubgroup: ''
   });
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
 
   useEffect(() => {
     loadUsers();
+    loadSubscribers();
   }, []);
+
+  const loadSubscribers = async () => {
+    try {
+      const { data: subscribersData, error } = await supabaseClient
+        .from('subscribers')
+        .select('email, title, location');
+
+      if (error) {
+        console.error('Error fetching subscribers:', error);
+        return;
+      }
+
+      setSubscribers(subscribersData || []);
+      
+      // Extract unique titles with their locations for subgroups
+      const titleMap = new Map();
+      (subscribersData || [])
+        .filter(sub => sub.title && sub.title.trim() !== '')
+        .forEach(sub => {
+          const title = sub.title.trim();
+          const location = sub.location ? sub.location.trim() : '';
+          if (!titleMap.has(title)) {
+            titleMap.set(title, location);
+          }
+        });
+      
+      const uniqueSubgroups = Array.from(titleMap.entries())
+        .map(([title, location]) => ({ title, location }))
+        .sort((a, b) => a.title.localeCompare(b.title));
+      
+      setSubscriberSubgroups(uniqueSubgroups);
+    } catch (error) {
+      console.error('Error loading subscribers:', error);
+    }
+  };
 
   const loadUsers = async () => {
     setLoading(true);
@@ -49,10 +88,17 @@ const Emails = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [name]: value
+      };
+      // Reset subscriberSubgroup when emailList changes away from subscribers
+      if (name === 'emailList' && value !== 'subscribers') {
+        newData.subscriberSubgroup = '';
+      }
+      return newData;
+    });
   };
 
   const clearForm = () => {
@@ -61,7 +107,8 @@ const Emails = () => {
       subject: '',
       body: '',
       emailTo: '',
-      emailName: ''
+      emailName: '',
+      subscriberSubgroup: ''
     });
   };
 
@@ -87,16 +134,16 @@ const Emails = () => {
       targetUsers = users.filter(user => user.zerotierId && user.email);
     } else if (emailList === 'subscribers') {
       try {
-        const { data: subscribers, error } = await supabaseClient
-          .from('subscribers')
-          .select('email');
-
-        if (error) {
-          console.error('Error fetching subscribers:', error);
-          return;
+        let filteredSubscribers = subscribers;
+        
+        // Filter by subgroup if selected
+        if (formData.subscriberSubgroup) {
+          filteredSubscribers = subscribers.filter(
+            sub => sub.title && sub.title.trim() === formData.subscriberSubgroup
+          );
         }
 
-        targetUsers = subscribers.map(subscriber => ({
+        targetUsers = filteredSubscribers.map(subscriber => ({
           email: subscriber.email,
           name: 'Subscriber'
         }));
@@ -268,6 +315,25 @@ const Emails = () => {
               </div>
             )}
 
+            {formData.emailList === 'subscribers' && subscriberSubgroups.length > 0 && (
+              <div className={styles.formGroup}>
+                <label htmlFor="subscriberSubgroup">Subscriber Subgroup (Optional)</label>
+                <select
+                  id="subscriberSubgroup"
+                  name="subscriberSubgroup"
+                  value={formData.subscriberSubgroup}
+                  onChange={handleChange}
+                >
+                  <option value="">All Subscribers</option>
+                  {subscriberSubgroups.map((subgroup, index) => (
+                    <option key={index} value={subgroup.title}>
+                      {subgroup.location ? `${subgroup.title} (${subgroup.location})` : subgroup.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div className={styles.formGroup}>
               <label htmlFor="body">Body</label>
               <textarea
@@ -323,7 +389,13 @@ const Emails = () => {
           }
         }}
         title="Confirm Send Emails"
-        message={`Are you sure you want to send emails to ${formData.emailList === 'single' ? '1 user' : 'multiple users'}?`}
+        message={`Are you sure you want to send emails to ${
+          formData.emailList === 'single' 
+            ? '1 user' 
+            : formData.emailList === 'subscribers' && formData.subscriberSubgroup
+            ? `subscribers in "${formData.subscriberSubgroup}" subgroup`
+            : 'multiple users'
+        }?`}
       />
     </div>
   );
