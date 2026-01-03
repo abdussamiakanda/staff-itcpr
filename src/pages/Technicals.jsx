@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { collection, getDocs, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { ref, set, get, remove } from 'firebase/database';
 import { db, database, auth } from '../config/firebase';
@@ -8,6 +8,7 @@ import styles from './Technicals.module.css';
 
 const Technicals = () => {
   const { user, userData } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState('');
   const [cleaning, setCleaning] = useState(false);
@@ -16,6 +17,34 @@ const Technicals = () => {
   const [updateStatus, setUpdateStatus] = useState('');
   const [syncingSupabase, setSyncingSupabase] = useState(false);
   const [supabaseStatus, setSupabaseStatus] = useState('');
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      // Check if user is admin from userData
+      if (userData?.type === 'admin') {
+        setIsAdmin(true);
+        return;
+      }
+
+      // Also check Realtime Database as fallback
+      if (user && auth.currentUser) {
+        try {
+          const currentUserRef = ref(database, `users/${auth.currentUser.uid}/type`);
+          const userTypeSnapshot = await get(currentUserRef);
+          if (userTypeSnapshot.exists() && userTypeSnapshot.val() === 'admin') {
+            setIsAdmin(true);
+            return;
+          }
+        } catch (rtError) {
+          console.error('Error checking Realtime DB for admin status:', rtError);
+        }
+      }
+
+      setIsAdmin(false);
+    };
+
+    checkAdminStatus();
+  }, [user, userData]);
 
   const syncUsersToRealtimeDB = async () => {
     setSyncing(true);
@@ -563,7 +592,7 @@ const Technicals = () => {
             <button
               className={styles.syncButton}
               onClick={syncUsersToRealtimeDB}
-              disabled={syncing}
+              disabled={syncing || !isAdmin}
             >
               {syncing ? (
                 <>
@@ -595,7 +624,7 @@ const Technicals = () => {
             <button
               className={styles.syncButton}
               onClick={cleanupWebmail}
-              disabled={cleaning}
+              disabled={cleaning || !isAdmin}
             >
               {cleaning ? (
                 <>
@@ -627,7 +656,7 @@ const Technicals = () => {
             <button
               className={styles.syncButton}
               onClick={updateAccessCodeJson}
-              disabled={updating}
+              disabled={updating || !isAdmin}
             >
               {updating ? (
                 <>
@@ -659,7 +688,7 @@ const Technicals = () => {
             <button
               className={styles.syncButton}
               onClick={syncUsersToSupabase}
-              disabled={syncingSupabase}
+              disabled={syncingSupabase || !isAdmin}
             >
               {syncingSupabase ? (
                 <>
