@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { collection, getDocs, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { ref, set, get, remove } from 'firebase/database';
 import { db, database, auth } from '../config/firebase';
+import { supabaseServiceClient } from '../config/supabase';
 import { useAuth } from '../hooks/useAuth';
 import styles from './Technicals.module.css';
 
@@ -13,6 +14,8 @@ const Technicals = () => {
   const [cleanStatus, setCleanStatus] = useState('');
   const [updating, setUpdating] = useState(false);
   const [updateStatus, setUpdateStatus] = useState('');
+  const [syncingSupabase, setSyncingSupabase] = useState(false);
+  const [supabaseStatus, setSupabaseStatus] = useState('');
 
   const syncUsersToRealtimeDB = async () => {
     setSyncing(true);
@@ -360,6 +363,184 @@ const Technicals = () => {
     }
   };
 
+  const syncUsersToSupabase = async () => {
+    setSyncingSupabase(true);
+    setSupabaseStatus('Starting synchronization to Supabase...');
+
+    try {
+      // Get all users from Firestore
+      const usersRef = collection(db, 'users');
+      const querySnapshot = await getDocs(usersRef);
+
+      if (querySnapshot.empty) {
+        setSupabaseStatus('No users found in Firestore.');
+        setSyncingSupabase(false);
+        return;
+      }
+
+      let processedCount = 0;
+      let insertedCount = 0;
+      let updatedCount = 0;
+      let errorCount = 0;
+
+      // Get existing records from Supabase to check for updates
+      setSupabaseStatus('Fetching existing records from Supabase...');
+      const { data: existingRecords, error: fetchError } = await supabaseServiceClient
+        .from('itcpr_people')
+        .select('id, name');
+
+      if (fetchError) {
+        throw new Error(`Failed to fetch existing records: ${fetchError.message}`);
+      }
+
+      // Create a map of lowercase names to record IDs for efficient lookup
+      const nameToIdMap = new Map();
+      existingRecords?.forEach(record => {
+        if (record.name) {
+          const nameLower = record.name.toLowerCase().trim();
+          nameToIdMap.set(nameLower, record.id);
+        }
+      });
+
+      setSupabaseStatus(`Found ${nameToIdMap.size} existing records. Processing Firestore users...`);
+
+      // Process each user
+      for (const userDoc of querySnapshot.docs) {
+        try {
+          const userData = userDoc.data();
+          
+          // Only process users with meaningful data (at least a name)
+          if (!userData || !userData.name) {
+            processedCount++;
+            continue;
+          }
+
+          // Helper function to clean and validate values
+          const cleanValue = (value) => {
+            if (value === undefined || value === null || value === '') return null;
+            return typeof value === 'string' ? value.trim() || null : value;
+          };
+
+          // Helper function to capitalize first letter
+          const capitalizeFirst = (str) => {
+            if (!str || typeof str !== 'string') return str;
+            return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+          };
+
+          // Map Firestore user data to Supabase table structure
+          // Only include fields with actual values (exclude null/empty)
+          const rawData = {
+            name: cleanValue(userData.name),
+            role: cleanValue(userData.role),
+            url: cleanValue(userData.googleScholar), // Firebase stores as 'googleScholar'
+            group: cleanValue(userData.group),
+            image: cleanValue(userData.photoURL || userData.image),
+            position: cleanValue(userData.position),
+            position_title: cleanValue(userData.position_title),
+            institute: cleanValue(userData.university) // Firebase stores as 'university'
+          };
+
+          // Ensure name is not null (required for matching)
+          if (!rawData.name) {
+            processedCount++;
+            continue;
+          }
+
+          // Build record - use empty string as default for null values
+          // Use '#' for url when empty
+          // Capitalize first letter of role and group
+          // If position is "staff", use position_title instead (keep position_title as-is, no capitalization)
+          // Allow null for position
+          let roleValue = rawData.role;
+          let positionValue = rawData.position;
+          let isPositionTitle = false; // Track if we're using position_title
+          
+          // Determine position value: use position_title if position is "staff"
+          if (positionValue && positionValue.toLowerCase() === 'staff' && rawData.position_title) {
+            positionValue = rawData.position_title;
+            isPositionTitle = true; // Mark that we're using position_title
+          }
+          
+          // Format position: keep position_title as-is, capitalize others
+          let formattedPosition = null;
+          if (positionValue) {
+            if (isPositionTitle) {
+              formattedPosition = positionValue; // Keep position_title as-is
+            } else {
+              formattedPosition = capitalizeFirst(positionValue);
+            }
+          }
+          
+          const supabaseRecord = {
+            name: rawData.name || '', // Required
+            role: roleValue ? capitalizeFirst(roleValue) : null,
+            url: rawData.url || '#',
+            group: rawData.group ? capitalizeFirst(rawData.group) : null,
+            image: rawData.image || '',
+            position: formattedPosition, // Allow null
+            institute: rawData.institute || null // Allow null
+          };
+
+          // Check if record exists (by name, case-insensitive)
+          const nameLower = supabaseRecord.name.toLowerCase().trim();
+          const existingId = nameToIdMap.get(nameLower);
+
+          if (existingId && existingId !== 'new') {
+            // Update existing record by ID
+            const { data, error: updateError } = await supabaseServiceClient
+              .from('itcpr_people')
+              .update(supabaseRecord)
+              .eq('id', existingId)
+              .select();
+
+            if (updateError) {
+              console.error(`Update error for user ${userDoc.id} (${supabaseRecord.name}):`, updateError);
+              throw new Error(`Update failed: ${updateError.message || JSON.stringify(updateError)}`);
+            }
+            updatedCount++;
+          } else {
+            // Insert new record
+            const { data, error: insertError } = await supabaseServiceClient
+              .from('itcpr_people')
+              .insert([supabaseRecord])
+              .select();
+
+            if (insertError) {
+              console.error(`Insert error for user ${userDoc.id} (${supabaseRecord.name}):`, insertError);
+              throw new Error(`Insert failed: ${insertError.message || JSON.stringify(insertError)}`);
+            }
+            
+            // Add the new record's ID to the map
+            if (data && data[0] && data[0].id) {
+              nameToIdMap.set(nameLower, data[0].id);
+            }
+            insertedCount++;
+          }
+
+          processedCount++;
+          setSupabaseStatus(`Processed ${processedCount}/${querySnapshot.docs.length} users...`);
+        } catch (error) {
+          console.error(`Error processing user ${userDoc.id}:`, error);
+          errorCount++;
+          processedCount++;
+          // Continue with next user even if one fails
+        }
+      }
+
+      // Final status update
+      if (errorCount === 0) {
+        setSupabaseStatus(`✓ Sync Complete! Processed: ${processedCount} users, Inserted: ${insertedCount} new records, Updated: ${updatedCount} existing records.`);
+      } else {
+        setSupabaseStatus(`⚠ Sync Complete! Processed: ${processedCount} users, Inserted: ${insertedCount} new records, Updated: ${updatedCount} existing records. Errors: ${errorCount}.`);
+      }
+    } catch (error) {
+      console.error('Error syncing users to Supabase:', error);
+      setSupabaseStatus(`✗ Error: ${error.message || 'Unknown error occurred'}`);
+    } finally {
+      setSyncingSupabase(false);
+    }
+  };
+
   return (
     <div className="container">
       <section className={styles.technicalsSection}>
@@ -463,6 +644,38 @@ const Technicals = () => {
             {updateStatus && (
               <div className={`${styles.syncStatus} ${updateStatus.startsWith('✓') ? styles.success : updateStatus.startsWith('✗') ? styles.error : styles.info}`}>
                 {updateStatus}
+              </div>
+            )}
+          </div>
+
+          <div className={styles.syncCard}>
+            <div className={styles.syncHeader}>
+              <span className="material-icons">storage</span>
+              <h3>Sync to Supabase</h3>
+            </div>
+            <p className={styles.syncDescription}>
+              Sync user data from Firestore to Supabase itcpr_people table. This will insert new users and update existing ones based on name matching.
+            </p>
+            <button
+              className={styles.syncButton}
+              onClick={syncUsersToSupabase}
+              disabled={syncingSupabase}
+            >
+              {syncingSupabase ? (
+                <>
+                  <span className="material-icons">hourglass_empty</span>
+                  Syncing...
+                </>
+              ) : (
+                <>
+                  <span className="material-icons">storage</span>
+                  Sync to Supabase
+                </>
+              )}
+            </button>
+            {supabaseStatus && (
+              <div className={`${styles.syncStatus} ${supabaseStatus.startsWith('✓') ? styles.success : supabaseStatus.startsWith('✗') ? styles.error : styles.info}`}>
+                {supabaseStatus}
               </div>
             )}
           </div>

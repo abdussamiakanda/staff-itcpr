@@ -45,16 +45,16 @@ const Sidebar = ({ currentPath, isOpen, onClose }) => {
   };
 
   const menuItems = [
-    { path: '/staff', icon: 'people', label: 'Staff Directory' },
-    { path: '/applications', icon: 'description', label: 'Applications' },
+    { path: '/staff', icon: 'people', label: 'Directory' },
     { path: '/users', icon: 'manage_accounts', label: 'Users' },
-    { path: '/finance', icon: 'account_balance_wallet', label: 'Finances' },
     { path: '/issues', icon: 'bug_report', label: 'Issues' },
     { path: '/events', icon: 'event', label: 'Events' },
-    { path: '/emails', icon: 'email', label: 'Send Emails' },
+    { path: '/finance', icon: 'account_balance_wallet', label: 'Finances' },
     { path: '/newsletter', icon: 'newspaper', label: 'Newsletter' },
+    { path: '/emails', icon: 'email', label: 'Send Emails' },
     { path: '/publications', icon: 'article', label: 'Publications' },
-    { path: '/responsibilities', icon: 'description', label: 'Responsibilities' },
+    { path: '/applications', icon: 'assignment', label: 'Applications' },
+    { path: '/responsibilities', icon: 'task', label: 'Responsibilities' },
     { path: '/technicals', icon: 'build', label: 'Technicals' },
   ];
 
