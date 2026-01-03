@@ -441,24 +441,35 @@ const Applications = () => {
       
       // Send new user email
       const message = `
-        <b>Your New ITCPR Email Credentials</b>
+        <p>Welcome to ITCPR! Your account has been successfully created. Please follow the instructions below to get started.</p>
+        
+        <b>Your ITCPR Email Credentials</b>
         <ul>
-        <li>Email Address: ${email}</li>
-        <li>Temporary Password: itcprnewuser</li>
+        <li><strong>Email Address:</strong> ${email}</li>
+        <li><strong>Temporary Password:</strong> itcprnewuser</li>
         </ul>
-        <b>What You Need to Do</b>
+        <p><strong>Important:</strong> You must change this temporary password immediately after your first login for security reasons.</p>
+        
+        <b>Getting Started</b>
+        <ol>
+        <li>Visit <a href="https://portal.itcpr.org">https://portal.itcpr.org</a> and log in using your email address and the temporary password above.</li>
+        <li>After logging in, you will see a prompt to join our Discord server. Discord is our primary communication platform for announcements, discussions, and collaboration.</li>
+        <li>If you don't have a Discord account, create one using your Gmail address. Make sure to use the same email address you used for your application.</li>
+        <li>Click the "Join" button on the portal to connect your Discord account and join our server.</li>
+        <li>We highly recommend downloading the Discord desktop app and mobile app for real-time notifications and better communication experience.</li>
+        <li>Once you're logged into the portal, click on your profile image in the top right corner.</li>
+        <li>Navigate to "Change Password" and create a strong, unique password. This is mandatory for account security.</li>
+        <li>Take some time to explore the portal features and familiarize yourself with the available services and resources.</li>
+        </ol>
+        
+        <b>Important Notes</b>
         <ul>
-        <li>Visit the portal: https://portal.itcpr.org</li>
-        <li>Log in using the email and temporary password above</li>
-        <li>After logging in, you will be prompted to join our Discord server</li>
-        <li>Create a new account on Discord with your gmail address, if you don't have one already</li>
-        <li>Click Join button on the portal and join the server</li>
-        <li>Download Discord desktop app and the mobile app to join the server</li>
-        <li>Click on the person icon on the top right corner in the portal.</li>
-        <li>Click on change password, and change your password immediately</li>
-        <li>You can now start using the portal and other services</li>
+        <li>All official communication from ITCPR will be sent through Discord and your ITCPR webmail (${email}). Please check both regularly.</li>
+        <li>Keep your login credentials secure and never share them with anyone.</li>
+        <li>If you encounter any issues or have questions, please reach out through Discord or contact the ITCPR team.</li>
         </ul>
-        <b>Explore our services to be familiar with the portal. All our communication is done through Discord and the webmail.</b>
+        
+        <p>We're excited to have you on board! If you have any questions or need assistance, don't hesitate to reach out.</p>
       `;
       const subject = `Welcome to ITCPR Portal`;
       await sendEmail(application.email, subject, getEmailTemplate(application.name || application.fullName, message));
