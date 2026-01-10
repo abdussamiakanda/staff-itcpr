@@ -143,10 +143,21 @@ const Emails = () => {
           );
         }
 
-        targetUsers = filteredSubscribers.map(subscriber => ({
-          email: subscriber.email,
-          name: 'Subscriber'
-        }));
+        // Ensure unique emails (database can have same email multiple times)
+        const uniqueEmails = new Set();
+        targetUsers = filteredSubscribers
+          .filter(subscriber => {
+            const email = subscriber.email?.toLowerCase().trim();
+            if (!email || uniqueEmails.has(email)) {
+              return false;
+            }
+            uniqueEmails.add(email);
+            return true;
+          })
+          .map(subscriber => ({
+            email: subscriber.email,
+            name: 'Subscriber'
+          }));
       } catch (error) {
         console.error('Error fetching subscribers:', error);
         return;
