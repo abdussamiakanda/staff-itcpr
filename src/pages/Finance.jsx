@@ -24,9 +24,12 @@ const Finance = () => {
 
   useEffect(() => {
     setIsAdmin(userData?.type === 'admin');
+  }, [userData]);
+
+  useEffect(() => {
     loadStaffData();
     loadFinanceData();
-  }, [userData]);
+  }, []);
 
   const loadStaffData = async () => {
     try {
@@ -109,6 +112,7 @@ const Finance = () => {
           netUSD: entry.incomeUSD - entry.expenseUSD,
           netBDT: entry.incomeBDT - entry.expenseBDT
         }))
+        .filter((entry) => entry.netUSD !== 0 || entry.netBDT !== 0)
         .sort((a, b) => a.account.localeCompare(b.account));
 
       setAccountBalances(accountBalancesArray);
