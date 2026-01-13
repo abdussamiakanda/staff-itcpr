@@ -431,6 +431,7 @@ const Issues = () => {
                   </div>
                   {issue.userName && (
                     <div className={styles.issueCreator}>
+                      <span className="material-icons">person</span>
                       Created by: {issue.userName}
                     </div>
                   )}

@@ -160,6 +160,10 @@
   margin-bottom: var(--spacing-md);
 }
 
+.issueMetaRow :global(.material-icons) {
+  font-size: 1rem;
+}
+
 .issueMeta {
   display: flex;
   flex-wrap: wrap;
@@ -204,6 +208,7 @@
   color: var(--text-medium);
   display: inline-flex;
   align-items: center;
+  gap: 6px;
 }
 
 .issueDescription {
@@ -291,7 +296,9 @@
 }
 
 .commentHeader {
+  padding-bottom: var(--spacing-sm);
   margin-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .commentUser {
@@ -302,7 +309,7 @@
   color: var(--text-medium);
 }
 
-.commentUser .material-icons {
+.commentUser :global(.material-icons) {
   font-size: 1rem;
 }
 
@@ -310,6 +317,7 @@
   font-size: 0.9375rem;
   color: var(--text-dark);
   line-height: 1.6;
+  padding: 0 var(--spacing-xs);
   margin-bottom: var(--spacing-sm);
 }
 
