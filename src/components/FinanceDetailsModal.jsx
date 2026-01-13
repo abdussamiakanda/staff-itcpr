@@ -37,6 +37,15 @@ const FinanceDetailsModal = ({ finance, onClose, onEdit, onDelete, formatDateTim
               </div>
             )}
 
+            {finance.category === 'monthly_fee' && finance.user && (
+              <div className={styles.financeDetailItemSmall}>
+                <span className="material-icons">person</span>
+                <span className={styles.financeUser}>
+                  User: {finance.user}
+                </span>
+              </div>
+            )}
+
             {finance.account && (
               <div className={styles.financeDetailItemSmall}>
                 <span className="material-icons">account_balance</span>

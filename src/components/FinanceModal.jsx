@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import { supabaseClient } from '../config/supabase';
 import styles from './FinanceModal.module.css';
 
 const FinanceModal = ({ finance, onClose, onSave }) => {
   const [staff, setStaff] = useState([]);
   const [loadingStaff, setLoadingStaff] = useState(true);
+  const [users, setUsers] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const [formData, setFormData] = useState({
     type: 'income',
     date: new Date().toISOString().split('T')[0],
@@ -14,11 +18,13 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
     category: '',
     description: '',
     account: '',
+    user: '',
     receipt: null
   });
 
   useEffect(() => {
     loadStaff();
+    loadUsers();
   }, []);
 
   useEffect(() => {
@@ -37,6 +43,7 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
         category: finance.category || '',
         description: finance.description || '',
         account: finance.account || '',
+        user: finance.user || '',
         receipt: null
       });
     }
@@ -69,12 +76,115 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
     }
   };
 
+  const loadUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const usersRef = collection(db, 'users');
+      const querySnapshot = await getDocs(usersRef);
+      
+      const usersData = [];
+      querySnapshot.forEach((doc) => {
+        const userData = doc.data();
+        if (userData.name && userData.email) {
+          usersData.push({
+            id: doc.id,
+            name: userData.name,
+            email: userData.email
+          });
+        }
+      });
+      
+      usersData.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      setAllUsers(usersData);
+      setUsers(usersData);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const filterUsersForMonthlyFee = async () => {
+    if (formData.category !== 'monthly_fee' || !formData.date) {
+      setUsers(allUsers);
+      return;
+    }
+
+    try {
+      // Get year and month from the selected date
+      const selectedDate = new Date(formData.date);
+      const year = selectedDate.getFullYear();
+      const month = selectedDate.getMonth() + 1; // getMonth() returns 0-11
+      
+      // Get start and end of the month
+      const startOfMonth = new Date(year, month - 1, 1);
+      const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
+      
+      const startISO = startOfMonth.toISOString();
+      const endISO = endOfMonth.toISOString();
+
+      // Fetch existing monthly fee entries for this month
+      let query = supabaseClient
+        .from('finances')
+        .select('id, user, created_at')
+        .eq('category', 'monthly_fee')
+        .eq('type', 'income')
+        .not('user', 'is', null)
+        .gte('created_at', startISO)
+        .lte('created_at', endISO);
+
+      // Exclude current finance record if editing
+      if (finance && finance.isEdit && finance.id) {
+        query = query.neq('id', finance.id);
+      }
+
+      const { data: monthlyEntries, error } = await query;
+
+      if (error) throw error;
+
+      // Get unique user names that already have entries for this month
+      const usedUserNames = new Set();
+      (monthlyEntries || []).forEach(entry => {
+        if (entry.user) {
+          usedUserNames.add(entry.user);
+        }
+      });
+
+      // Filter out users who already have entries for this month
+      // But always include the current user if editing
+      const availableUsers = allUsers.filter(user => {
+        if (finance && finance.isEdit && finance.user === user.name) {
+          return true; // Always include current user when editing
+        }
+        return !usedUserNames.has(user.name);
+      });
+      setUsers(availableUsers);
+    } catch (error) {
+      console.error('Error filtering users for monthly fee:', error);
+      setUsers(allUsers); // Fallback to all users on error
+    }
+  };
+
+  useEffect(() => {
+    if (allUsers.length > 0) {
+      filterUsersForMonthlyFee();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.category, formData.date, allUsers.length]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [name]: value
+      };
+      // Reset user field when category changes away from monthly_fee
+      if (name === 'category' && value !== 'monthly_fee') {
+        newData.user = '';
+      }
+      return newData;
+    });
   };
 
   const handleFileChange = (e) => {
@@ -89,12 +199,17 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
     if (!formData.type || !formData.date || !formData.currency || !formData.amount || !formData.description || !formData.category || !formData.account) {
       return;
     }
+    // Require user field when category is monthly_fee
+    if (formData.category === 'monthly_fee' && !formData.user) {
+      return;
+    }
     onSave(formData);
   };
 
   const isEdit = finance && finance.isEdit;
 
   const incomeCategories = [
+    { value: 'monthly_fee', label: 'Monthly Fee' },
     { value: 'individual_donations', label: 'Individual Donations' },
     { value: 'corporate_sponsorships', label: 'Corporate Sponsorships' },
     { value: 'research_grants', label: 'Research Grants' },
@@ -248,6 +363,28 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
                 </select>
               </div>
             </div>
+
+            {formData.type === 'income' && formData.category === 'monthly_fee' && (
+              <div className={styles.formGroup}>
+                <label htmlFor="user">User *</label>
+                <select
+                  id="user"
+                  name="user"
+                  value={formData.user}
+                  onChange={handleChange}
+                  className={styles.formControl}
+                  required
+                  disabled={loadingUsers}
+                >
+                  <option value="">Select User</option>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.name}>
+                      {user.name} ({user.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className={styles.formGroup}>
               <label htmlFor="description">Description *</label>

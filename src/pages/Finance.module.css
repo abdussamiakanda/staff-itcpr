@@ -206,6 +206,10 @@
   color: rgba(255, 0, 0, 1);
 }
 
+.statValue.zero {
+  color: var(--primary-dark);
+}
+
 .statSubtitle {
   font-size: 0.8125rem;
   color: var(--text-medium);

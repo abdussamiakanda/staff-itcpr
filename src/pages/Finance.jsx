@@ -150,6 +150,7 @@ const Finance = () => {
           receipt,
           category: formData.category,
           account: formData.account || null,
+          user: formData.user || null,
           created_at: formData.date
         });
 
@@ -189,6 +190,7 @@ const Finance = () => {
           receipt,
           category: formData.category,
           account: formData.account || null,
+          user: formData.user || null,
           created_at: formData.date
         })
         .eq('id', id);
@@ -306,10 +308,10 @@ const Finance = () => {
                     </div>
                     <span className={styles.statTitle}>{acc.account}</span>
                   </div>
-                  <div className={`${styles.statValue} ${acc.netUSD >= 0 ? styles.positive : styles.negative}`}>
+                  <div className={`${styles.statValue} ${acc.netUSD === 0 ? styles.zero : (acc.netUSD > 0 ? styles.positive : styles.negative)}`}>
                     $ {acc.netUSD.toFixed(2)}
                   </div>
-                  <div className={`${styles.statValue} ${acc.netBDT >= 0 ? styles.positive : styles.negative}`}>
+                  <div className={`${styles.statValue} ${acc.netBDT === 0 ? styles.zero : (acc.netBDT > 0 ? styles.positive : styles.negative)}`}>
                     ৳ {acc.netBDT.toFixed(2)}
                   </div>
                   <div className={styles.statSubtitle}>
