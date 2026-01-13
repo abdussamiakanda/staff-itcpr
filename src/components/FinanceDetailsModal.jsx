@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './FinanceDetailsModal.module.css';
 
-const FinanceDetailsModal = ({ finance, onClose, onEdit, onDelete, formatDateTime }) => {
+const FinanceDetailsModal = ({ finance, onClose, onEdit, onDelete, formatDateTime, isAdmin = false }) => {
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -20,20 +20,29 @@ const FinanceDetailsModal = ({ finance, onClose, onEdit, onDelete, formatDateTim
               </span>
             </div>
 
-            <div className={styles.financeDetailItem}>
+            <div className={styles.financeDetailItemSmall}>
               <span className="material-icons">description</span>
               <span className={styles.financeDescription}>{finance.description}</span>
             </div>
 
-            <div className={styles.financeDetailItem}>
+            <div className={styles.financeDetailItemSmall}>
               <span className="material-icons">event</span>
               <span className={styles.financeDate}>{formatDateTime(finance.created_at)}</span>
             </div>
 
             {finance.category && (
-              <div className={styles.financeDetailItem}>
+              <div className={styles.financeDetailItemSmall}>
                 <span className="material-icons">category</span>
                 <span className={styles.financeCategory}>{finance.category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+              </div>
+            )}
+
+            {finance.account && (
+              <div className={styles.financeDetailItemSmall}>
+                <span className="material-icons">account_balance</span>
+                <span className={styles.financeAccount}>
+                  Account: {finance.account}
+                </span>
               </div>
             )}
 
@@ -50,10 +59,12 @@ const FinanceDetailsModal = ({ finance, onClose, onEdit, onDelete, formatDateTim
             <span className="material-icons">edit</span>
             Edit
           </button>
-          <button className={styles.btnDanger} onClick={onDelete}>
-            <span className="material-icons">delete</span>
-            Delete
-          </button>
+          {isAdmin && (
+            <button className={styles.btnDanger} onClick={onDelete}>
+              <span className="material-icons">delete</span>
+              Delete
+            </button>
+          )}
           <button className={styles.btnOutline} onClick={onClose}>
             Close
           </button>

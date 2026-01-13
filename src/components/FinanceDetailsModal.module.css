@@ -116,10 +116,10 @@
   border: 1px solid var(--border-color);
 }
 
-.financeDetailItem .material-icons {
-  font-size: 1.25rem;
-  color: var(--primary);
-  flex-shrink: 0;
+.financeDetailItemSmall {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
 }
 
 .financeCurrency {

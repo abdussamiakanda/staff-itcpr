@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../config/firebase';
 import styles from './FinanceModal.module.css';
 
 const FinanceModal = ({ finance, onClose, onSave }) => {
+  const [staff, setStaff] = useState([]);
+  const [loadingStaff, setLoadingStaff] = useState(true);
   const [formData, setFormData] = useState({
     type: 'income',
     date: new Date().toISOString().split('T')[0],
@@ -9,8 +13,13 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
     amount: '',
     category: '',
     description: '',
+    account: '',
     receipt: null
   });
+
+  useEffect(() => {
+    loadStaff();
+  }, []);
 
   useEffect(() => {
     if (finance && !finance.isEdit) {
@@ -27,10 +36,38 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
         amount: finance.amount || '',
         category: finance.category || '',
         description: finance.description || '',
+        account: finance.account || '',
         receipt: null
       });
     }
   }, [finance]);
+
+  const loadStaff = async () => {
+    setLoadingStaff(true);
+    try {
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('position', '==', 'staff'));
+      const querySnapshot = await getDocs(q);
+      
+      const staffData = [];
+      querySnapshot.forEach((doc) => {
+        const userData = doc.data();
+        if (userData.name) {
+          staffData.push({
+            id: doc.id,
+            name: userData.name
+          });
+        }
+      });
+      
+      staffData.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      setStaff(staffData);
+    } catch (error) {
+      console.error('Error loading staff:', error);
+    } finally {
+      setLoadingStaff(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -49,7 +86,7 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.type || !formData.date || !formData.currency || !formData.amount || !formData.description || !formData.category) {
+    if (!formData.type || !formData.date || !formData.currency || !formData.amount || !formData.description || !formData.category || !formData.account) {
       return;
     }
     onSave(formData);
@@ -147,48 +184,69 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
               </div>
             </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="category">{formData.type === 'income' ? 'Income' : 'Expense'} Category *</label>
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className={styles.formControl}
-                required
-              >
-                <option value="">Select {formData.type === 'income' ? 'Income' : 'Expense'} Category</option>
-                {formData.type === 'income' ? (
-                  <optgroup label="Funding Sources">
-                    {incomeCategories.map(cat => (
-                      <option key={cat.value} value={cat.value}>{cat.label}</option>
-                    ))}
-                  </optgroup>
-                ) : (
-                  <>
-                    <optgroup label="Research Expenditures">
-                      {expenseCategories.filter(c => ['research_traveling', 'publication'].includes(c.value)).map(cat => (
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label htmlFor="category">{formData.type === 'income' ? 'Income' : 'Expense'} Category *</label>
+                <select
+                  id="category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className={styles.formControl}
+                  required
+                >
+                  <option value="">Select {formData.type === 'income' ? 'Income' : 'Expense'} Category</option>
+                  {formData.type === 'income' ? (
+                    <optgroup label="Funding Sources">
+                      {incomeCategories.map(cat => (
                         <option key={cat.value} value={cat.value}>{cat.label}</option>
                       ))}
                     </optgroup>
-                    <optgroup label="Operational Costs">
-                      {expenseCategories.filter(c => ['facility_maintenance', 'server_maintenance'].includes(c.value)).map(cat => (
-                        <option key={cat.value} value={cat.value}>{cat.label}</option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Educational Initiatives">
-                      {expenseCategories.filter(c => ['educational_programs', 'student_support'].includes(c.value)).map(cat => (
-                        <option key={cat.value} value={cat.value}>{cat.label}</option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Outreach & Communication">
-                      {expenseCategories.filter(c => ['community_engagement', 'promotional_activity'].includes(c.value)).map(cat => (
-                        <option key={cat.value} value={cat.value}>{cat.label}</option>
-                      ))}
-                    </optgroup>
-                  </>
-                )}
-              </select>
+                  ) : (
+                    <>
+                      <optgroup label="Research Expenditures">
+                        {expenseCategories.filter(c => ['research_traveling', 'publication'].includes(c.value)).map(cat => (
+                          <option key={cat.value} value={cat.value}>{cat.label}</option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Operational Costs">
+                        {expenseCategories.filter(c => ['facility_maintenance', 'server_maintenance'].includes(c.value)).map(cat => (
+                          <option key={cat.value} value={cat.value}>{cat.label}</option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Educational Initiatives">
+                        {expenseCategories.filter(c => ['educational_programs', 'student_support'].includes(c.value)).map(cat => (
+                          <option key={cat.value} value={cat.value}>{cat.label}</option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Outreach & Communication">
+                        {expenseCategories.filter(c => ['community_engagement', 'promotional_activity'].includes(c.value)).map(cat => (
+                          <option key={cat.value} value={cat.value}>{cat.label}</option>
+                        ))}
+                      </optgroup>
+                    </>
+                  )}
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="account">Account *</label>
+                <select
+                  id="account"
+                  name="account"
+                  value={formData.account}
+                  onChange={handleChange}
+                  className={styles.formControl}
+                  required
+                  disabled={loadingStaff}
+                >
+                  <option value="">Select {formData.type === 'income' ? 'Receiving' : 'Spending'} Account</option>
+                  {staff.map((member) => (
+                    <option key={member.id} value={member.name}>
+                      {member.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className={styles.formGroup}>

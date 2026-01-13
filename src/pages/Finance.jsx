@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../config/firebase';
 import { supabaseClient, supabaseServiceClient } from '../config/supabase';
+import { useAuth } from '../hooks/useAuth';
 import FinanceModal from '../components/FinanceModal';
 import FinanceDetailsModal from '../components/FinanceDetailsModal';
 import DeleteFinanceModal from '../components/DeleteFinanceModal';
 import styles from './Finance.module.css';
 
 const Finance = () => {
+  const { user, userData } = useAuth();
   const [finances, setFinances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -14,18 +18,45 @@ const Finance = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterCurrency, setFilterCurrency] = useState('all');
-  const [stats, setStats] = useState({
-    totalIncomeUSD: 0,
-    totalIncomeBDT: 0,
-    totalExpenseUSD: 0,
-    totalExpenseBDT: 0,
-    currentBalanceUSD: 0,
-    currentBalanceBDT: 0
-  });
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [accountBalances, setAccountBalances] = useState([]);
+  const [staffMap, setStaffMap] = useState(new Map());
 
   useEffect(() => {
+    setIsAdmin(userData?.type === 'admin');
+    loadStaffData();
     loadFinanceData();
-  }, []);
+  }, [userData]);
+
+  const loadStaffData = async () => {
+    try {
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('position', '==', 'staff'));
+      const querySnapshot = await getDocs(q);
+      
+      const staffDataMap = new Map();
+      querySnapshot.forEach((doc) => {
+        const userData = doc.data();
+        if (userData.name) {
+          staffDataMap.set(userData.name, {
+            photoURL: userData.photoURL || null,
+            name: userData.name
+          });
+        }
+      });
+      
+      setStaffMap(staffDataMap);
+    } catch (error) {
+      console.error('Error loading staff data:', error);
+    }
+  };
+
+  const getInitials = (name) => {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
 
   const loadFinanceData = async () => {
     setLoading(true);
@@ -39,24 +70,48 @@ const Finance = () => {
 
       setFinances(data || []);
 
-      // Calculate stats
-      const incomeUSD = data?.filter(f => f.type === 'income' && f.currency === 'USD')
-        .reduce((sum, f) => sum + (parseFloat(f.amount) || 0), 0) || 0;
-      const incomeBDT = data?.filter(f => f.type === 'income' && f.currency === 'BDT')
-        .reduce((sum, f) => sum + (parseFloat(f.amount) || 0), 0) || 0;
-      const expenseUSD = data?.filter(f => f.type === 'expense' && f.currency === 'USD')
-        .reduce((sum, f) => sum + (parseFloat(f.amount) || 0), 0) || 0;
-      const expenseBDT = data?.filter(f => f.type === 'expense' && f.currency === 'BDT')
-        .reduce((sum, f) => sum + (parseFloat(f.amount) || 0), 0) || 0;
+      // Per-account balances
+      const accountMap = new Map();
+      data?.forEach((f) => {
+        const accountName = f.account || 'Unspecified';
+        const currency = f.currency || 'USD';
+        const amount = parseFloat(f.amount) || 0;
+        const entry =
+          accountMap.get(accountName) ||
+          {
+            account: accountName,
+            incomeUSD: 0,
+            expenseUSD: 0,
+            incomeBDT: 0,
+            expenseBDT: 0
+          };
 
-      setStats({
-        totalIncomeUSD: incomeUSD,
-        totalIncomeBDT: incomeBDT,
-        totalExpenseUSD: expenseUSD,
-        totalExpenseBDT: expenseBDT,
-        currentBalanceUSD: incomeUSD - expenseUSD,
-        currentBalanceBDT: incomeBDT - expenseBDT
+        if (currency === 'USD') {
+          if (f.type === 'income') {
+            entry.incomeUSD += amount;
+          } else {
+            entry.expenseUSD += amount;
+          }
+        } else if (currency === 'BDT') {
+          if (f.type === 'income') {
+            entry.incomeBDT += amount;
+          } else {
+            entry.expenseBDT += amount;
+          }
+        }
+
+        accountMap.set(accountName, entry);
       });
+
+      const accountBalancesArray = Array.from(accountMap.values())
+        .map((entry) => ({
+          ...entry,
+          netUSD: entry.incomeUSD - entry.expenseUSD,
+          netBDT: entry.incomeBDT - entry.expenseBDT
+        }))
+        .sort((a, b) => a.account.localeCompare(b.account));
+
+      setAccountBalances(accountBalancesArray);
     } catch (error) {
       console.error('Error loading finance data:', error);
     } finally {
@@ -90,6 +145,7 @@ const Finance = () => {
           description: formData.description,
           receipt,
           category: formData.category,
+          account: formData.account || null,
           created_at: formData.date
         });
 
@@ -128,6 +184,7 @@ const Finance = () => {
           description: formData.description,
           receipt,
           category: formData.category,
+          account: formData.account || null,
           created_at: formData.date
         })
         .eq('id', id);
@@ -184,6 +241,7 @@ const Finance = () => {
     const matchesSearch = !searchQuery || 
       (f.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (f.category || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (f.account || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (f.amount || '').toString().includes(searchQuery);
     const matchesType = filterType === 'all' || f.type === filterType;
     const matchesCurrency = filterCurrency === 'all' || f.currency === filterCurrency;
@@ -222,45 +280,53 @@ const Finance = () => {
           </div>
         </div>
 
-        <div className={styles.overviewContainer}>
-          <div className={styles.statCard}>
-            <div className={styles.statHeader}>
-              <span className={`material-icons ${styles.statIcon}`}>attach_money</span>
-              <span className={styles.statTitle}>Total Income</span>
+        {accountBalances.length > 0 && (
+          <div className={styles.accountStatsSection}>
+            <div className={styles.accountStatsHeader}>
+              <h3>Account Balances</h3>
+              <p>Net by account (USD / BDT)</p>
             </div>
-            <div className={styles.statValue}>$ {stats.totalIncomeUSD.toFixed(2)}</div>
-            <div className={styles.statValue}>৳ {stats.totalIncomeBDT.toFixed(2)}</div>
+            <div className={styles.accountStatsGrid}>
+              {accountBalances.map((acc) => {
+                const staffInfo = staffMap.get(acc.account);
+                const initials = getInitials(acc.account);
+                return (
+                <div key={acc.account} className={styles.statCard}>
+                  <div className={styles.statHeader}>
+                    <div className={styles.accountAvatar}>
+                      {staffInfo?.photoURL ? (
+                        <img src={staffInfo.photoURL} alt={acc.account} />
+                      ) : (
+                        <span>{initials}</span>
+                      )}
+                    </div>
+                    <span className={styles.statTitle}>{acc.account}</span>
+                  </div>
+                  <div className={`${styles.statValue} ${acc.netUSD >= 0 ? styles.positive : styles.negative}`}>
+                    $ {acc.netUSD.toFixed(2)}
+                  </div>
+                  <div className={`${styles.statValue} ${acc.netBDT >= 0 ? styles.positive : styles.negative}`}>
+                    ৳ {acc.netBDT.toFixed(2)}
+                  </div>
+                  <div className={styles.statSubtitle}>
+                    Income $ {acc.incomeUSD.toFixed(2)} | Expense $ {acc.expenseUSD.toFixed(2)}
+                  </div>
+                  <div className={styles.statSubtitle}>
+                    Income ৳ {acc.incomeBDT.toFixed(2)} | Expense ৳ {acc.expenseBDT.toFixed(2)}
+                  </div>
+                </div>
+              );
+              })}
+            </div>
           </div>
-
-          <div className={styles.statCard}>
-            <div className={styles.statHeader}>
-              <span className={`material-icons ${styles.statIcon}`}>payments</span>
-              <span className={styles.statTitle}>Total Expense</span>
-            </div>
-            <div className={styles.statValue}>$ {stats.totalExpenseUSD.toFixed(2)}</div>
-            <div className={styles.statValue}>৳ {stats.totalExpenseBDT.toFixed(2)}</div>
-          </div>
-
-          <div className={styles.statCard}>
-            <div className={styles.statHeader}>
-              <span className={`material-icons ${styles.statIcon}`}>account_balance</span>
-              <span className={styles.statTitle}>Current Balance</span>
-            </div>
-            <div className={`${styles.statValue} ${stats.currentBalanceUSD >= 0 ? styles.positive : styles.negative}`}>
-              $ {stats.currentBalanceUSD.toFixed(2)}
-            </div>
-            <div className={`${styles.statValue} ${stats.currentBalanceBDT >= 0 ? styles.positive : styles.negative}`}>
-              ৳ {stats.currentBalanceBDT.toFixed(2)}
-            </div>
-          </div>
-        </div>
+        )}
 
         <div className={styles.filtersContainer}>
           <div className={styles.searchBox}>
             <span className="material-icons">search</span>
             <input
               type="text"
-              placeholder="Search by description, category, or amount..."
+              placeholder="Search by description, category, account, or amount..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -355,6 +421,7 @@ const Finance = () => {
           onEdit={(finance) => setSelectedFinance({ ...finance, isEdit: true })}
           onDelete={() => setShowDeleteModal(true)}
           formatDateTime={formatDateTime}
+          isAdmin={isAdmin}
         />
       )}
 
