@@ -126,13 +126,25 @@
 .formGroup select,
 .formGroup textarea {
   width: 100%;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
   font-size: 0.9375rem;
+  transition: all 0.2s ease;
   background-color: var(--bg-main);
   color: var(--text-dark);
   font-family: inherit;
+}
+
+.formGroup select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  cursor: pointer;
 }
 
 .formGroup textarea {
@@ -145,7 +157,7 @@
 .formGroup textarea:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(157, 157, 189, 0.1);
+  box-shadow: 0 0 0 4px rgba(157, 157, 189, 0.1);
 }
 
 .speakerSection {
