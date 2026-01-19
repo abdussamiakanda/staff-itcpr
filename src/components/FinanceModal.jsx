@@ -142,21 +142,21 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
 
       if (error) throw error;
 
-      // Get unique user names that already have entries for this month
-      const usedUserNames = new Set();
+      // Get unique user UIDs that already have entries for this month
+      const usedUserUids = new Set();
       (monthlyEntries || []).forEach(entry => {
         if (entry.user) {
-          usedUserNames.add(entry.user);
+          usedUserUids.add(entry.user);
         }
       });
 
       // Filter out users who already have entries for this month
       // But always include the current user if editing
       const availableUsers = allUsers.filter(user => {
-        if (finance && finance.isEdit && finance.user === user.name) {
+        if (finance && finance.isEdit && finance.user === user.id) {
           return true; // Always include current user when editing
         }
-        return !usedUserNames.has(user.name);
+        return !usedUserUids.has(user.id);
       });
       setUsers(availableUsers);
     } catch (error) {
@@ -182,6 +182,21 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
       // Reset user field when category changes away from monthly_fee
       if (name === 'category' && value !== 'monthly_fee') {
         newData.user = '';
+        // Reset description if switching away from monthly_fee
+        if (prev.category === 'monthly_fee') {
+          newData.description = '';
+        }
+      }
+      // Reset description when currency changes for monthly_fee income
+      if (name === 'currency' && prev.type === 'income' && prev.category === 'monthly_fee') {
+        newData.description = '';
+      }
+      // Reset description when switching to/from monthly_fee
+      if (name === 'category' && prev.type === 'income') {
+        if ((value === 'monthly_fee' && prev.category !== 'monthly_fee') || 
+            (value !== 'monthly_fee' && prev.category === 'monthly_fee')) {
+          newData.description = '';
+        }
       }
       return newData;
     });
@@ -228,7 +243,28 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
     { value: 'promotional_activity', label: 'Promotional Activity' }
   ];
 
-  const currentCategories = formData.type === 'income' ? incomeCategories : expenseCategories;
+  // Payment method options based on currency
+  const usdPaymentMethods = [
+    { value: 'Zelle', label: 'Zelle' },
+    { value: 'PayPal', label: 'PayPal' },
+    { value: 'Venmo', label: 'Venmo' },
+    { value: 'Bank Transfer', label: 'Bank Transfer' },
+    { value: 'Cash', label: 'Cash' },
+    { value: 'Check', label: 'Check' },
+    { value: 'Wire Transfer', label: 'Wire Transfer' }
+  ];
+
+  const bdtPaymentMethods = [
+    { value: 'bKash', label: 'bKash' },
+    { value: 'Nagad', label: 'Nagad' },
+    { value: 'Rocket', label: 'Rocket' },
+    { value: 'Cash', label: 'Cash' },
+    { value: 'Bank Transfer', label: 'Bank Transfer' },
+    { value: 'Bank Deposit', label: 'Bank Deposit' }
+  ];
+
+  const paymentMethods = formData.currency === 'USD' ? usdPaymentMethods : bdtPaymentMethods;
+  const isMonthlyFeeIncome = formData.type === 'income' && formData.category === 'monthly_fee';
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -378,7 +414,7 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
                 >
                   <option value="">Select User</option>
                   {users.map((user) => (
-                    <option key={user.id} value={user.name}>
+                    <option key={user.id} value={user.id}>
                       {user.name} ({user.email})
                     </option>
                   ))}
@@ -388,15 +424,33 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
 
             <div className={styles.formGroup}>
               <label htmlFor="description">Description *</label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                className={styles.formControl}
-                rows="4"
-                required
-              />
+              {isMonthlyFeeIncome ? (
+                <select
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  className={styles.formControl}
+                  required
+                >
+                  <option value="">Select Payment Method</option>
+                  {paymentMethods.map((method) => (
+                    <option key={method.value} value={method.value}>
+                      {method.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  className={styles.formControl}
+                  rows="4"
+                  required
+                />
+              )}
             </div>
 
             <div className={styles.formGroup}>

@@ -1,7 +1,50 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
 import styles from './FinanceDetailsModal.module.css';
 
 const FinanceDetailsModal = ({ finance, onClose, onEdit, onDelete, formatDateTime, isAdmin = false }) => {
+  const [userName, setUserName] = useState(null);
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      if (!finance || !finance.category || !finance.user) {
+        setUserName(null);
+        return;
+      }
+
+      if (finance.category === 'monthly_fee' && finance.user) {
+        // Check if finance.user looks like a UID (long alphanumeric string) or is a name
+        // UIDs are typically 28 characters, but we'll check if it's longer than a typical name
+        if (finance.user.length > 20 || !finance.user.includes(' ')) {
+          // Likely a UID, fetch the name
+          try {
+            const userDocRef = doc(db, 'users', finance.user);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              setUserName(userData.name || finance.user);
+            } else {
+              setUserName(finance.user); // Fallback to UID if user not found
+            }
+          } catch (error) {
+            console.error('Error fetching user name:', error);
+            setUserName(finance.user); // Fallback to UID on error
+          }
+        } else {
+          // Likely a name (backward compatibility)
+          setUserName(finance.user);
+        }
+      }
+    };
+
+    fetchUserName();
+  }, [finance?.user, finance?.category]);
+
+  if (!finance) {
+    return null;
+  }
+
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -41,7 +84,7 @@ const FinanceDetailsModal = ({ finance, onClose, onEdit, onDelete, formatDateTim
               <div className={styles.financeDetailItemSmall}>
                 <span className="material-icons">person</span>
                 <span className={styles.financeUser}>
-                  User: {finance.user}
+                  User: {userName || finance.user}
                 </span>
               </div>
             )}

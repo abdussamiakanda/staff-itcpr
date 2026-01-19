@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { supabaseClient, supabaseServiceClient } from '../config/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { sendEmail, getEmailTemplate } from '../utils/email';
 import FinanceModal from '../components/FinanceModal';
 import FinanceDetailsModal from '../components/FinanceDetailsModal';
 import DeleteFinanceModal from '../components/DeleteFinanceModal';
@@ -59,6 +60,69 @@ const Finance = () => {
     const parts = name.trim().split(/\s+/);
     if (parts.length === 1) return parts[0][0].toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
+  const getUserDataByUid = async (userUid) => {
+    if (!userUid) return null;
+    try {
+      const userDocRef = doc(db, 'users', userUid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        return {
+          email: userData.email || null,
+          name: userData.name || null
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      return null;
+    }
+  };
+
+  const sendMonthlyFeeConfirmationEmail = async (userUid, amount, currency, date, paymentMethod) => {
+    if (!userUid) return;
+    
+    try {
+      const userData = await getUserDataByUid(userUid);
+      if (!userData || !userData.email) {
+        console.warn(`User email not found for UID: ${userUid}`);
+        return;
+      }
+
+      const paymentDate = new Date(date);
+      const formattedDate = paymentDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      const formattedMonth = paymentDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long'
+      });
+      const currencySymbol = currency === 'USD' ? '$' : '৳';
+      
+      const message = `
+        <p>This is to confirm that your monthly fee payment has been received and recorded.</p>
+        
+        <b>Payment Details</b>
+        <ul>
+          <li><strong>Amount:</strong> ${currencySymbol} ${parseFloat(amount).toFixed(2)} ${currency === 'USD' ? 'USD' : 'BDT'}</li>
+          <li><strong>Payment Method:</strong> ${paymentMethod || 'Not specified'}</li>
+          <li><strong>Month:</strong> ${formattedMonth}</li>
+        </ul>
+        
+        <p>Thank you for your continued support. If you have any questions or concerns regarding this payment, please don't hesitate to contact us.</p>
+      `;
+      
+      const subject = `Monthly Fee Payment Confirmation - ${formattedDate}`;
+      await sendEmail(userData.email, subject, getEmailTemplate(userData.name || 'User', message));
+      console.log(`Confirmation email sent to ${userData.name} (${userData.email})`);
+    } catch (error) {
+      console.error('Error sending monthly fee confirmation email:', error);
+    }
   };
 
   const loadFinanceData = async () => {
@@ -156,6 +220,17 @@ const Finance = () => {
 
       if (error) throw error;
 
+      // Send confirmation email if it's a monthly fee income
+      if (formData.type === 'income' && formData.category === 'monthly_fee' && formData.user) {
+        await sendMonthlyFeeConfirmationEmail(
+          formData.user,
+          formData.amount,
+          formData.currency,
+          formData.date,
+          formData.description
+        );
+      }
+
       setShowAddModal(false);
       await loadFinanceData();
     } catch (error) {
@@ -196,6 +271,17 @@ const Finance = () => {
         .eq('id', id);
 
       if (error) throw error;
+
+      // Send confirmation email if it's a monthly fee income
+      if (formData.type === 'income' && formData.category === 'monthly_fee' && formData.user) {
+        await sendMonthlyFeeConfirmationEmail(
+          formData.user,
+          formData.amount,
+          formData.currency,
+          formData.date,
+          formData.description
+        );
+      }
 
       setSelectedFinance(null);
       await loadFinanceData();
