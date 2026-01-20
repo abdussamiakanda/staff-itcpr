@@ -107,6 +107,13 @@ const FinanceModal = ({ finance, onClose, onSave, saving = false }) => {
   };
 
   const filterUsersForMonthlyFee = async () => {
+    // For individual donations, show all users (no filtering needed)
+    if (formData.category === 'individual_donations') {
+      setUsers(allUsers);
+      return;
+    }
+
+    // For other categories, show all users
     if (formData.category !== 'monthly_fee' || !formData.date) {
       setUsers(allUsers);
       return;
@@ -187,22 +194,24 @@ const FinanceModal = ({ finance, onClose, onSave, saving = false }) => {
         ...prev,
         [name]: value
       };
-      // Reset user field when category changes away from monthly_fee
-      if (name === 'category' && value !== 'monthly_fee') {
+      // Reset user field when category changes away from monthly_fee or individual_donations
+      if (name === 'category' && value !== 'monthly_fee' && value !== 'individual_donations') {
         newData.user = '';
-        // Reset description if switching away from monthly_fee
-        if (prev.category === 'monthly_fee') {
+        // Reset description if switching away from monthly_fee or individual_donations
+        if (prev.category === 'monthly_fee' || prev.category === 'individual_donations') {
           newData.description = '';
         }
       }
-      // Reset description when currency changes for monthly_fee income
-      if (name === 'currency' && prev.type === 'income' && prev.category === 'monthly_fee') {
+      // Reset description when currency changes for monthly_fee or individual_donations income
+      if (name === 'currency' && prev.type === 'income' && 
+          (prev.category === 'monthly_fee' || prev.category === 'individual_donations')) {
         newData.description = '';
       }
-      // Reset description when switching to/from monthly_fee
+      // Reset description when switching to/from monthly_fee or individual_donations
       if (name === 'category' && prev.type === 'income') {
-        if ((value === 'monthly_fee' && prev.category !== 'monthly_fee') || 
-            (value !== 'monthly_fee' && prev.category === 'monthly_fee')) {
+        const isUserCategory = (cat) => cat === 'monthly_fee' || cat === 'individual_donations';
+        if ((isUserCategory(value) && !isUserCategory(prev.category)) || 
+            (!isUserCategory(value) && isUserCategory(prev.category))) {
           newData.description = '';
         }
       }
@@ -223,8 +232,8 @@ const FinanceModal = ({ finance, onClose, onSave, saving = false }) => {
     if (!formData.type || !formData.date || !formData.currency || !formData.amount || !formData.description || !formData.category || !formData.account) {
       return;
     }
-    // Require user field when category is monthly_fee
-    if (formData.category === 'monthly_fee' && !formData.user) {
+    // Require user field when category is monthly_fee or individual_donations
+    if ((formData.category === 'monthly_fee' || formData.category === 'individual_donations') && !formData.user) {
       return;
     }
     onSave(formData);
@@ -274,6 +283,8 @@ const FinanceModal = ({ finance, onClose, onSave, saving = false }) => {
 
   const paymentMethods = formData.currency === 'USD' ? usdPaymentMethods : bdtPaymentMethods;
   const isMonthlyFeeIncome = formData.type === 'income' && formData.category === 'monthly_fee';
+  const isIndividualDonationIncome = formData.type === 'income' && formData.category === 'individual_donations';
+  const isUserCategoryIncome = isMonthlyFeeIncome || isIndividualDonationIncome;
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -431,9 +442,25 @@ const FinanceModal = ({ finance, onClose, onSave, saving = false }) => {
               </div>
             )}
 
+            {formData.type === 'income' && formData.category === 'individual_donations' && (
+              <div className={styles.formGroup}>
+                <label htmlFor="user">User *</label>
+                <input
+                  type="text"
+                  id="user"
+                  name="user"
+                  value={formData.user}
+                  onChange={handleChange}
+                  className={styles.formControl}
+                  placeholder="Enter donor name"
+                  required
+                />
+              </div>
+            )}
+
             <div className={styles.formGroup}>
               <label htmlFor="description">Description *</label>
-              {isMonthlyFeeIncome ? (
+              {isUserCategoryIncome ? (
                 <select
                   id="description"
                   name="description"
