@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './DeleteFinanceModal.module.css';
 
-const DeleteFinanceModal = ({ onClose, onConfirm }) => {
+const DeleteFinanceModal = ({ onClose, onConfirm, deleting = false }) => {
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -15,11 +15,28 @@ const DeleteFinanceModal = ({ onClose, onConfirm }) => {
         </div>
 
         <div className={styles.modalFooter}>
-          <button className={styles.btnDanger} onClick={onConfirm}>
-            <span className="material-icons">delete</span>
-            Delete
+          <button 
+            className={styles.btnDanger} 
+            onClick={onConfirm}
+            disabled={deleting}
+          >
+            {deleting ? (
+              <>
+                <span className={`material-icons ${styles.spinningIcon}`}>sync</span>
+                Deleting...
+              </>
+            ) : (
+              <>
+                <span className="material-icons">delete</span>
+                Delete
+              </>
+            )}
           </button>
-          <button className={styles.btnOutline} onClick={onClose}>
+          <button 
+            className={styles.btnOutline} 
+            onClick={onClose}
+            disabled={deleting}
+          >
             Cancel
           </button>
         </div>

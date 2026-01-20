@@ -503,3 +503,19 @@
     padding: 8px 10px;
   }
 }
+
+.btnAddNews:disabled,
+.btnRefresh:disabled,
+.btnView:disabled,
+.btnEdit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btnAddNews:disabled:hover,
+.btnRefresh:disabled:hover,
+.btnView:disabled:hover,
+.btnEdit:disabled:hover {
+  transform: none;
+}

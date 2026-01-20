@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { supabaseClient, supabaseServiceClient } from '../config/supabase';
@@ -10,6 +11,7 @@ import DeleteFinanceModal from '../components/DeleteFinanceModal';
 import styles from './Finance.module.css';
 
 const Finance = () => {
+  const navigate = useNavigate();
   const { user, userData } = useAuth();
   const [finances, setFinances] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,6 +24,8 @@ const Finance = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [accountBalances, setAccountBalances] = useState([]);
   const [staffMap, setStaffMap] = useState(new Map());
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     setIsAdmin(userData?.type === 'admin');
@@ -114,6 +118,8 @@ const Finance = () => {
           <li><strong>Month:</strong> ${formattedMonth}</li>
         </ul>
         
+        <p>You can view your complete payment history at <a href="https://pay.itcpr.org" target="_blank" rel="noopener noreferrer">https://pay.itcpr.org</a>.</p>
+        
         <p>Thank you for your continued support. If you have any questions or concerns regarding this payment, please don't hesitate to contact us.</p>
       `;
       
@@ -188,6 +194,7 @@ const Finance = () => {
   };
 
   const handleAddFinance = async (formData) => {
+    setSaving(true);
     try {
       const receiptFile = formData.receipt;
       let receipt = null;
@@ -235,10 +242,13 @@ const Finance = () => {
       await loadFinanceData();
     } catch (error) {
       console.error('Error adding finance:', error);
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleEditFinance = async (id, formData) => {
+    setSaving(true);
     try {
       const receiptFile = formData.receipt;
       let receipt = null;
@@ -287,10 +297,13 @@ const Finance = () => {
       await loadFinanceData();
     } catch (error) {
       console.error('Error updating finance:', error);
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleDeleteFinance = async (id) => {
+    setDeleting(true);
     try {
       const { error } = await supabaseServiceClient
         .from('finances')
@@ -304,6 +317,8 @@ const Finance = () => {
       await loadFinanceData();
     } catch (error) {
       console.error('Error deleting finance:', error);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -365,9 +380,12 @@ const Finance = () => {
               <span className="material-icons">add</span>
               Add Finance
             </button>
-            <button className={styles.btnRefresh} onClick={loadFinanceData}>
-              <i className="fas fa-sync-alt"></i>
-              Refresh
+            <button 
+              className={styles.btnSettings} 
+              onClick={() => navigate('/finance/fee-settings')}
+            >
+              <span className="material-icons">settings</span>
+              Fee Settings
             </button>
           </div>
         </div>
@@ -503,6 +521,7 @@ const Finance = () => {
         <FinanceModal
           onClose={() => setShowAddModal(false)}
           onSave={handleAddFinance}
+          saving={saving}
         />
       )}
 
@@ -522,6 +541,7 @@ const Finance = () => {
           finance={selectedFinance}
           onClose={() => setSelectedFinance(null)}
           onSave={(formData) => handleEditFinance(selectedFinance.id, formData)}
+          saving={saving}
         />
       )}
 
@@ -532,6 +552,7 @@ const Finance = () => {
             setSelectedFinance(null);
           }}
           onConfirm={() => handleDeleteFinance(selectedFinance.id)}
+          deleting={deleting}
         />
       )}
     </div>

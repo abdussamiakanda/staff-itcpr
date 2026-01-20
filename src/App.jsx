@@ -7,6 +7,7 @@ import Staff from './pages/Staff';
 import Applications from './pages/Applications';
 import Users from './pages/Users';
 import Finance from './pages/Finance';
+import MonthlyFeeSettings from './pages/MonthlyFeeSettings';
 import Issues from './pages/Issues';
 import IssueDetail from './pages/IssueDetail';
 import Emails from './pages/Emails';
@@ -16,6 +17,7 @@ import Responsibilities from './pages/Responsibilities';
 import Technicals from './pages/Technicals';
 import Events from './pages/Events';
 import EventDetail from './pages/EventDetail';
+import NotFound from './pages/NotFound';
 import LoadingOverlay from './components/LoadingOverlay';
 
 function App() {
@@ -69,6 +71,7 @@ function App() {
             <Route path="/applications" element={<Applications />} />
             <Route path="/users" element={<Users />} />
             <Route path="/finance" element={<Finance />} />
+            <Route path="/finance/fee-settings" element={<MonthlyFeeSettings />} />
             <Route path="/issues" element={<Issues />} />
             <Route path="/issues/:id" element={<IssueDetail />} />
             <Route path="/emails" element={<Emails />} />
@@ -78,6 +81,7 @@ function App() {
             <Route path="/technicals" element={<Technicals />} />
             <Route path="/events" element={<Events />} />
             <Route path="/events/:id" element={<EventDetail />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
       </Router>

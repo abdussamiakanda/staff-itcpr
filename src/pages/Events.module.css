@@ -489,3 +489,21 @@
   }
 }
 
+
+.btnAddEvent:disabled,
+.btnRefresh:disabled,
+.btnView:disabled,
+.btnEdit:disabled,
+.btnDelete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btnAddEvent:disabled:hover,
+.btnRefresh:disabled:hover,
+.btnView:disabled:hover,
+.btnEdit:disabled:hover,
+.btnDelete:disabled:hover {
+  transform: none;
+}

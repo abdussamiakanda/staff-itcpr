@@ -4,7 +4,7 @@ import { db } from '../config/firebase';
 import { supabaseClient } from '../config/supabase';
 import styles from './FinanceModal.module.css';
 
-const FinanceModal = ({ finance, onClose, onSave }) => {
+const FinanceModal = ({ finance, onClose, onSave, saving = false }) => {
   const [staff, setStaff] = useState([]);
   const [loadingStaff, setLoadingStaff] = useState(true);
   const [users, setUsers] = useState([]);
@@ -89,7 +89,9 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
           usersData.push({
             id: doc.id,
             name: userData.name,
-            email: userData.email
+            email: userData.email,
+            // Waived users should not show up for monthly fee selection
+            isWaived: !!userData.isExemptFromMonthlyFee
           });
         }
       });
@@ -156,6 +158,12 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
         if (finance && finance.isEdit && finance.user === user.id) {
           return true; // Always include current user when editing
         }
+
+        // Don't show waived users for monthly fee selection
+        if (user.isWaived) {
+          return false;
+        }
+
         return !usedUserUids.has(user.id);
       });
       setUsers(availableUsers);
@@ -211,6 +219,7 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (saving) return; // Prevent submission if already saving
     if (!formData.type || !formData.date || !formData.currency || !formData.amount || !formData.description || !formData.category || !formData.account) {
       return;
     }
@@ -473,10 +482,27 @@ const FinanceModal = ({ finance, onClose, onSave }) => {
         </div>
 
         <div className={styles.modalFooter}>
-          <button type="submit" form="financeForm" className={styles.btnPrimary}>
-            {isEdit ? 'Save Changes' : 'Add Finance'}
+          <button 
+            type="submit" 
+            form="financeForm" 
+            className={styles.btnPrimary}
+            disabled={saving}
+          >
+            {saving ? (
+              <>
+                <span className={`material-icons ${styles.spinningIcon}`}>sync</span>
+                {isEdit ? 'Saving...' : 'Adding...'}
+              </>
+            ) : (
+              isEdit ? 'Save Changes' : 'Add Finance'
+            )}
           </button>
-          <button type="button" className={styles.btnOutline} onClick={onClose}>
+          <button 
+            type="button" 
+            className={styles.btnOutline} 
+            onClick={onClose}
+            disabled={saving}
+          >
             Cancel
           </button>
         </div>

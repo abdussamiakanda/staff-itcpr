@@ -648,3 +648,23 @@
     font-size: 2rem;
   }
 }
+
+.btnRefresh:disabled,
+.appBtnSecondary:disabled,
+.appBtnSuccess:disabled,
+.appBtnWarning:disabled,
+.appBtnDanger:disabled,
+.appBtnOutline:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btnRefresh:disabled:hover,
+.appBtnSecondary:disabled:hover,
+.appBtnSuccess:disabled:hover,
+.appBtnWarning:disabled:hover,
+.appBtnDanger:disabled:hover,
+.appBtnOutline:disabled:hover {
+  transform: none;
+}

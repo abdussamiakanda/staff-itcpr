@@ -675,3 +675,19 @@
   }
 }
 
+
+.btnAddPublication:disabled,
+.btnRefresh:disabled,
+.btnEdit:disabled,
+.btnDelete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btnAddPublication:disabled:hover,
+.btnRefresh:disabled:hover,
+.btnEdit:disabled:hover,
+.btnDelete:disabled:hover {
+  transform: none;
+}

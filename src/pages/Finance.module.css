@@ -70,7 +70,18 @@
   box-shadow: 0 6px 20px rgba(157, 157, 189, 0.35);
 }
 
-.btnRefresh {
+.btnAddFinance:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btnAddFinance:disabled:hover {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(157, 157, 189, 0.25);
+}
+
+.btnSettings {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -85,10 +96,16 @@
   cursor: pointer;
 }
 
-.btnRefresh:hover {
+.btnSettings:hover {
   border-color: var(--primary);
   background: var(--primary);
   color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(157, 157, 189, 0.25);
+}
+
+.btnSettings .material-icons {
+  font-size: 20px;
 }
 
 .overviewContainer {
