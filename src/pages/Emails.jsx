@@ -118,8 +118,8 @@ const Emails = () => {
       // Handle overleaf email group
       if (name === 'emailList') {
         if (value === 'overleaf') {
-          newData.subject = 'Overleaf ITCPR - Account Activation';
-          newData.body = `An account has been created for you on Overleaf ITCPR.
+          newData.subject = 'ITCPR Overleaf - Account Activation';
+          newData.body = `An account has been created for you on ITCPR Overleaf.
 
 To complete the account activation process, please set your password by visiting the link below:
 
@@ -134,10 +134,10 @@ Should you require any assistance, please contact the ITCPR administration team.
           newData.overleafUser = '';
           newData.overleafLink = '';
           // Clear subject and body if they were the overleaf defaults and switching away
-          if (prev.subject === 'Overleaf ITCPR - Account Activation') {
+          if (prev.subject === 'ITCPR Overleaf - Account Activation') {
             newData.subject = '';
           }
-          if (prev.body.includes('An account has been created for you on Overleaf ITCPR')) {
+          if (prev.body.includes('An account has been created for you on ITCPR Overleaf')) {
             newData.body = '';
           }
         }
