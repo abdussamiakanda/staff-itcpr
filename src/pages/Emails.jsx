@@ -19,7 +19,9 @@ const Emails = () => {
     body: '',
     emailTo: '',
     emailName: '',
-    subscriberSubgroup: ''
+    subscriberSubgroup: '',
+    overleafUser: '',
+    overleafLink: ''
   });
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
@@ -28,6 +30,22 @@ const Emails = () => {
     loadUsers();
     loadSubscribers();
   }, []);
+
+  // Update body in real-time when overleafLink changes
+  useEffect(() => {
+    if (formData.emailList === 'overleaf' && formData.body.includes('Account activation link:')) {
+      const linkToUse = formData.overleafLink.trim() || '[PASTE SET PASSWORD URL HERE]';
+      // Match "Account activation link: " followed by the link/placeholder and then a newline
+      const linkRegex = /(Account activation link:\s)(.*?)(\n)/;
+      const match = formData.body.match(linkRegex);
+      
+      // Only update if the link in the body is different from what we want
+      if (match && match[2] !== linkToUse) {
+        const updatedBody = formData.body.replace(linkRegex, `$1${linkToUse}$3`);
+        setFormData(prev => ({ ...prev, body: updatedBody }));
+      }
+    }
+  }, [formData.overleafLink, formData.emailList]);
 
   const loadSubscribers = async () => {
     try {
@@ -97,6 +115,48 @@ const Emails = () => {
       if (name === 'emailList' && value !== 'subscribers') {
         newData.subscriberSubgroup = '';
       }
+      // Handle overleaf email group
+      if (name === 'emailList') {
+        if (value === 'overleaf') {
+          newData.subject = 'Overleaf ITCPR - Account Activation';
+          newData.body = `An account has been created for you on Overleaf ITCPR.
+
+To complete the account activation process, please set your password by visiting the link below:
+
+Account activation link: [PASTE SET PASSWORD URL HERE]
+
+This link is unique to your account. If the link does not open correctly, please copy and paste it into your web browser.
+
+After setting your password, you may access the platform at: <a href="https://overleaf.itcpr.org">https://overleaf.itcpr.org</a>
+
+Should you require any assistance, please contact the ITCPR administration team.`;
+        } else {
+          newData.overleafUser = '';
+          newData.overleafLink = '';
+          // Clear subject and body if they were the overleaf defaults and switching away
+          if (prev.subject === 'Overleaf ITCPR - Account Activation') {
+            newData.subject = '';
+          }
+          if (prev.body.includes('An account has been created for you on Overleaf ITCPR')) {
+            newData.body = '';
+          }
+        }
+      }
+      // Replace placeholder or existing link in body when overleafLink changes
+      if (name === 'overleafLink' && prev.emailList === 'overleaf' && prev.body.includes('Account activation link:')) {
+        const linkToUse = value.trim() || '[PASTE SET PASSWORD URL HERE]';
+        // Match "Account activation link: " followed by the link/placeholder and then a newline
+        const linkRegex = /(Account activation link:\s)(.*?)(\n)/;
+        const match = prev.body.match(linkRegex);
+        
+        if (match) {
+          // Replace the link part (placeholder or existing link)
+          newData.body = prev.body.replace(linkRegex, `$1${linkToUse}$3`);
+        } else if (prev.body.includes('[PASTE SET PASSWORD URL HERE]')) {
+          // Fallback: simple replace if regex doesn't match
+          newData.body = prev.body.replace('[PASTE SET PASSWORD URL HERE]', linkToUse);
+        }
+      }
       return newData;
     });
   };
@@ -108,7 +168,9 @@ const Emails = () => {
       body: '',
       emailTo: '',
       emailName: '',
-      subscriberSubgroup: ''
+      subscriberSubgroup: '',
+      overleafUser: '',
+      overleafLink: ''
     });
   };
 
@@ -168,6 +230,21 @@ const Emails = () => {
         return;
       }
       targetUsers = [{ email: emailTo, name: emailName || 'User' }];
+    } else if (emailList === 'overleaf') {
+      if (!formData.overleafUser) {
+        toast.error('Please select a user.');
+        return;
+      }
+      if (!formData.overleafLink || !formData.overleafLink.trim()) {
+        toast.error('Please enter the account activation link.');
+        return;
+      }
+      const selectedUser = users.find(user => user.id === formData.overleafUser);
+      if (!selectedUser || !selectedUser.email) {
+        toast.error('Selected user does not have an email address.');
+        return;
+      }
+      targetUsers = [{ email: selectedUser.email, name: selectedUser.name || 'User' }];
     } else {
       targetUsers = users.filter(user => user.group === emailList && user.email);
     }
@@ -281,6 +358,7 @@ const Emails = () => {
                   <option value="members">Members</option>
                   <option value="directors">Directors</option>
                   <option value="server">Server Users</option>
+                  <option value="overleaf">Overleaf</option>
                   <option value="subscribers">Subscribers</option>
                 </select>
               </div>
@@ -345,6 +423,47 @@ const Emails = () => {
               </div>
             )}
 
+            {formData.emailList === 'overleaf' && (
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="overleafUser">Select User *</label>
+                  <select
+                    id="overleafUser"
+                    name="overleafUser"
+                    value={formData.overleafUser}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Select a user</option>
+                    {users
+                      .filter(user => user.email)
+                      .sort((a, b) => {
+                        const nameA = (a.name || '').toLowerCase();
+                        const nameB = (b.name || '').toLowerCase();
+                        return nameA.localeCompare(nameB);
+                      })
+                      .map(user => (
+                        <option key={user.id} value={user.id}>
+                          {user.name} {user.email ? `(${user.email})` : ''}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="overleafLink">Account Activation Link *</label>
+                  <input
+                    type="url"
+                    id="overleafLink"
+                    name="overleafLink"
+                    value={formData.overleafLink}
+                    onChange={handleChange}
+                    placeholder="Paste the set password URL here"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
             <div className={styles.formGroup}>
               <label htmlFor="body">Body</label>
               <textarea
@@ -401,7 +520,7 @@ const Emails = () => {
         }}
         title="Confirm Send Emails"
         message={`Are you sure you want to send emails to ${
-          formData.emailList === 'single' 
+          formData.emailList === 'single' || formData.emailList === 'overleaf'
             ? '1 user' 
             : formData.emailList === 'subscribers' && formData.subscriberSubgroup
             ? `subscribers in "${formData.subscriberSubgroup}" subgroup`
