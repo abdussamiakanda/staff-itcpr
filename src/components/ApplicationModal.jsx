@@ -1,6 +1,11 @@
 import React from 'react';
 import styles from './ApplicationModal.module.css';
 
+const formatFileUrlForDisplay = (url) => {
+  if (url == null || typeof url !== 'string') return '';
+  return url.replace('public/files/applicants', 'files/applicants');
+};
+
 const ApplicationModal = ({ application, onClose, onApprove, onReject, onScheduleInterview, onDownloadFile, capitalize, formatDate }) => {
   const appId = application.id || application._id;
   const firestoreStatus = application.firestoreStatus || 'pending';
@@ -161,8 +166,8 @@ const ApplicationModal = ({ application, onClose, onApprove, onReject, onSchedul
                   {application.fileUrls.cv ? (
                     <div className={styles.appFileItem}>
                       <span className="material-icons">description</span>
-                      <span className={styles.appFileName}>CV: {application.fileUrls.cv}</span>
-                      <button className={styles.appBtnOutline} onClick={() => onDownloadFile(application.fileUrls.cv)}>
+                      <span className={styles.appFileName}>CV: {formatFileUrlForDisplay(application.fileUrls.cv)}</span>
+                      <button className={styles.appBtnOutline} onClick={() => onDownloadFile(formatFileUrlForDisplay(application.fileUrls.cv))}>
                         <span className="material-icons">open_in_new</span>
                       </button>
                     </div>
@@ -170,8 +175,8 @@ const ApplicationModal = ({ application, onClose, onApprove, onReject, onSchedul
                   {application.fileUrls.coverLetter ? (
                     <div className={styles.appFileItem}>
                       <span className="material-icons">description</span>
-                      <span className={styles.appFileName}>Cover Letter: {application.fileUrls.coverLetter}</span>
-                      <button className={styles.appBtnOutline} onClick={() => onDownloadFile(application.fileUrls.coverLetter)}>
+                      <span className={styles.appFileName}>Cover Letter: {formatFileUrlForDisplay(application.fileUrls.coverLetter)}</span>
+                      <button className={styles.appBtnOutline} onClick={() => onDownloadFile(formatFileUrlForDisplay(application.fileUrls.coverLetter))}>
                         <span className="material-icons">open_in_new</span>
                       </button>
                     </div>
@@ -179,8 +184,8 @@ const ApplicationModal = ({ application, onClose, onApprove, onReject, onSchedul
                   {application.fileUrls.transcript ? (
                     <div className={styles.appFileItem}>
                       <span className="material-icons">description</span>
-                      <span className={styles.appFileName}>Transcript: {application.fileUrls.transcript}</span>
-                      <button className={styles.appBtnOutline} onClick={() => onDownloadFile(application.fileUrls.transcript)}>
+                      <span className={styles.appFileName}>Transcript: {formatFileUrlForDisplay(application.fileUrls.transcript)}</span>
+                      <button className={styles.appBtnOutline} onClick={() => onDownloadFile(formatFileUrlForDisplay(application.fileUrls.transcript))}>
                         <span className="material-icons">open_in_new</span>
                       </button>
                     </div>
@@ -188,8 +193,8 @@ const ApplicationModal = ({ application, onClose, onApprove, onReject, onSchedul
                   {application.fileUrls.additionalDocuments ? (
                     <div className={styles.appFileItem}>
                       <span className="material-icons">description</span>
-                      <span className={styles.appFileName}>Additional Documents: {application.fileUrls.additionalDocuments}</span>
-                      <button className={styles.appBtnOutline} onClick={() => onDownloadFile(application.fileUrls.additionalDocuments)}>
+                      <span className={styles.appFileName}>Additional Documents: {formatFileUrlForDisplay(application.fileUrls.additionalDocuments)}</span>
+                      <button className={styles.appBtnOutline} onClick={() => onDownloadFile(formatFileUrlForDisplay(application.fileUrls.additionalDocuments))}>
                         <span className="material-icons">open_in_new</span>
                       </button>
                     </div>
