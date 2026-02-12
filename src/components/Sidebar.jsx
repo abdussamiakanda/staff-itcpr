@@ -47,6 +47,7 @@ const Sidebar = ({ currentPath, isOpen, onClose }) => {
   const menuItems = [
     { path: '/staff', icon: 'people', label: 'Directory' },
     { path: '/users', icon: 'manage_accounts', label: 'Users' },
+    { path: '/travel', icon: 'flight_takeoff', label: 'Travel' },
     { path: '/issues', icon: 'bug_report', label: 'Issues' },
     { path: '/events', icon: 'event', label: 'Events' },
     { path: '/finance', icon: 'account_balance_wallet', label: 'Finances' },
@@ -114,8 +115,7 @@ const Sidebar = ({ currentPath, isOpen, onClose }) => {
           onClick={handleSignOut}
           disabled={loading}
         >
-          <span className="material-icons">logout</span>
-          <span>{loading ? 'Signing out...' : 'Sign Out'}</span>
+          <span className="material-icons">{loading ? 'refresh' : 'logout'}</span>
         </button>
       </div>
     </aside>

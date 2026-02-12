@@ -17,6 +17,7 @@ import Responsibilities from './pages/Responsibilities';
 import Technicals from './pages/Technicals';
 import Events from './pages/Events';
 import EventDetail from './pages/EventDetail';
+import Travel from './pages/Travel';
 import NotFound from './pages/NotFound';
 import LoadingOverlay from './components/LoadingOverlay';
 
@@ -81,6 +82,7 @@ function App() {
             <Route path="/technicals" element={<Technicals />} />
             <Route path="/events" element={<Events />} />
             <Route path="/events/:id" element={<EventDetail />} />
+            <Route path="/travel" element={<Travel />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
