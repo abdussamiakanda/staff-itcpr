@@ -94,7 +94,7 @@ const MonthlyFeeSettings = () => {
             <li><strong>Frequency:</strong> Monthly</li>
           </ul>
           
-          <p>You can view your payment history and make payments at <a href="https://pay.itcpr.org" target="_blank" rel="noopener noreferrer">https://pay.itcpr.org</a>.</p>
+          <p>You can view your complete payment history at <a href="https://account.itcpr.org" target="_blank" rel="noopener noreferrer">https://account.itcpr.org</a>.</p>
         `;
       }
       

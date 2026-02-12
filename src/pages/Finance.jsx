@@ -118,7 +118,7 @@ const Finance = () => {
           <li><strong>Month:</strong> ${formattedMonth}</li>
         </ul>
         
-        <p>You can view your complete payment history at <a href="https://pay.itcpr.org" target="_blank" rel="noopener noreferrer">https://pay.itcpr.org</a>.</p>
+        <p>You can view your complete payment history at <a href="https://account.itcpr.org" target="_blank" rel="noopener noreferrer">https://account.itcpr.org</a>.</p>
         
         <p>Thank you for your continued support. If you have any questions or concerns regarding this payment, please don't hesitate to contact us.</p>
       `;
