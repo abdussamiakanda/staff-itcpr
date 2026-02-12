@@ -28,7 +28,6 @@
 .sectionTitle h2 {
   font-size: 2.25rem;
   margin-bottom: var(--spacing-xs);
-  margin-top: var(--spacing-md);
   color: var(--text-dark);
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -140,6 +139,8 @@
 .filterChipActive:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(157, 157, 189, 0.4);
+  color: white;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
 }
 
 .cardList {
