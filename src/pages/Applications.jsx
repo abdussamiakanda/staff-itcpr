@@ -434,7 +434,7 @@ const Applications = () => {
         createdAt: serverTimestamp(),
         uid: result.uid,
         university: application.university,
-        status: 'pending'
+        status: 'active'
       };
       
       await setDoc(doc(db, 'users', result.uid), userData);
