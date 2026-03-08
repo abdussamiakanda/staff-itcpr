@@ -382,10 +382,10 @@ const Finance = () => {
             </button>
             <button 
               className={styles.btnSettings} 
-              onClick={() => navigate('/finance/fee-settings')}
+              onClick={() => navigate('/finance/fee')}
             >
-              <span className="material-icons">settings</span>
-              Fee Settings
+              <span className="material-icons">account_balance_wallet</span>
+              Fee
             </button>
           </div>
         </div>

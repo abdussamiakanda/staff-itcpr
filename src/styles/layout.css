@@ -6,6 +6,8 @@
 
 .main-content {
   flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
   padding: var(--spacing-xl);
   margin-left: 240px;
   transition: margin-left 0.3s ease;

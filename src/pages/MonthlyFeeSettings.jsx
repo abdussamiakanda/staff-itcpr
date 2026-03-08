@@ -179,10 +179,10 @@ const MonthlyFeeSettings = () => {
           <div className={styles.sectionTitle}>
             <button 
               className={styles.btnBack}
-              onClick={() => navigate('/finance')}
+              onClick={() => navigate('/finance/fee')}
             >
               <span className="material-icons">arrow_back</span>
-              Back to Finance
+              Back to Fee
             </button>
             <h2>Fee Settings</h2>
             <p>Configure monthly fee amounts and waived users</p>

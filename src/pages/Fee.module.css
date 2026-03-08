@@ -1,0 +1,303 @@
+.feeSection {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 2px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.sectionTitle h2 {
+  font-size: 2.25rem;
+  margin-bottom: var(--spacing-xs);
+  margin-top: var(--spacing-md);
+  color: var(--text-dark);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--text-dark) 0%, var(--text-medium) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.sectionTitle p {
+  color: var(--text-medium);
+  font-size: 1rem;
+  font-weight: 500;
+  margin-top: var(--spacing-xs);
+}
+
+.sectionActions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.btnBack {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 12px 20px;
+  background: var(--bg-main);
+  color: var(--text-dark);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btnBack:hover {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(157, 157, 189, 0.25);
+}
+
+.yearFilter {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.yearLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.yearSelect {
+  padding: 10px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  background: var(--bg-main);
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.yearSelect:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.btnSettings {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 12px 24px;
+  background: var(--bg-main);
+  color: var(--text-dark);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.btnSettings:hover {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(157, 157, 189, 0.25);
+}
+
+.btnSettings .material-icons {
+  font-size: 20px;
+}
+
+.tableWrapper {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.feeTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.feeTable th,
+.feeTable td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.feeTable tbody {
+  font-size: 0.8125rem;
+}
+
+.feeTable tbody td {
+  padding: 6px 16px;
+}
+
+.feeTable thead tr {
+  background: var(--bg-light);
+}
+
+.feeTable th {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.feeTable tbody tr:hover {
+  background: var(--bg-light);
+}
+
+.thUser {
+  min-width: 200px;
+  position: sticky;
+  left: 0;
+  background: var(--bg-light);
+  z-index: 1;
+}
+
+.thMonth {
+  min-width: 80px;
+  text-align: center;
+}
+
+.tdUser {
+  position: sticky;
+  left: 0;
+  background: var(--bg-main);
+  z-index: 1;
+}
+
+.feeTable tbody tr:hover .tdUser {
+  background: var(--bg-light);
+}
+
+.userName {
+  display: block;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.userEmail {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--text-medium);
+  margin-top: 2px;
+}
+
+.tdMonth {
+  text-align: center;
+}
+
+.paid {
+  color: rgb(23, 170, 0);
+  font-weight: 600;
+}
+
+.unpaid {
+  color: var(--text-medium);
+}
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 60px 20px;
+  color: var(--text-medium);
+}
+
+.loadingState .spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--bg-light);
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 24px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loadingState h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+}
+
+.loadingState p {
+  font-size: 1rem;
+  color: var(--text-medium);
+  margin: 0;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-medium);
+}
+
+.emptyState .material-icons {
+  font-size: 64px;
+  color: var(--border-color);
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.emptyState p {
+  font-size: 1rem;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sectionActions {
+    width: 100%;
+  }
+
+  .thMonth,
+  .tdMonth {
+    min-width: 64px;
+    padding: 8px;
+    font-size: 0.875rem;
+  }
+}

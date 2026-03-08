@@ -7,6 +7,7 @@ import Staff from './pages/Staff';
 import Applications from './pages/Applications';
 import Users from './pages/Users';
 import Finance from './pages/Finance';
+import Fee from './pages/Fee';
 import MonthlyFeeSettings from './pages/MonthlyFeeSettings';
 import Issues from './pages/Issues';
 import IssueDetail from './pages/IssueDetail';
@@ -72,6 +73,7 @@ function App() {
             <Route path="/applications" element={<Applications />} />
             <Route path="/users" element={<Users />} />
             <Route path="/finance" element={<Finance />} />
+            <Route path="/finance/fee" element={<Fee />} />
             <Route path="/finance/fee-settings" element={<MonthlyFeeSettings />} />
             <Route path="/issues" element={<Issues />} />
             <Route path="/issues/:id" element={<IssueDetail />} />
